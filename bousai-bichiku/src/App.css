@@ -1,0 +1,176 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+  background: #f3f4f6;
+}
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ヘッダー */
+
+.app-header {
+  background: white;
+  padding: 0;
+  /* 余白を削除 */
+  height: 80px;
+  /* 高さを固定 */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-content {
+  max-width: 1600px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  height: 100%;
+  /* 高さ一杯に */
+  padding-right: 24px;
+  /* 右側の余白は確保 */
+}
+
+/* ロゴ画像設定 */
+.header-title {
+  width: 320px;
+  height: 100%;
+  /* 親要素の高さ一杯に */
+  background-image: url('/header_rabbit.png');
+  background-repeat: no-repeat;
+  background-position: left center;
+  background-size: contain;
+  /* 高さに合わせて表示 */
+}
+
+/* 以前のh1設定は削除または無効化 */
+/* .header-title h1 { ... } */
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-history {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-history:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+.btn-history .badge {
+  background: #3b82f6;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* ボディ（サイドバー + メイン） */
+.app-body {
+  flex: 1;
+  display: flex;
+  max-width: 1600px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* メインコンテンツ */
+.app-main {
+  flex: 1;
+  padding: 24px;
+  min-width: 0;
+}
+
+/* フッター情報 */
+.main-footer {
+  margin-top: 20px;
+  padding: 16px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  color: #6b7280;
+  border-top: 1px solid #e5e7eb;
+}
+
+.footer-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.footer-alert {
+  color: #ca8a04;
+}
+
+.btn-export-stock {
+  padding: 8px 14px;
+  background: #10b981;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-export-stock:hover {
+  background: #059669;
+}
+
+/* レスポンシブ */
+@media (max-width: 768px) {
+  .app-body {
+    flex-direction: column;
+  }
+
+  .app-header {
+    padding: 12px 16px;
+  }
+
+  .header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .header-title h1 {
+    font-size: 18px;
+  }
+
+  .app-main {
+    padding: 16px;
+  }
+
+  .main-footer {
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
+  }
+}

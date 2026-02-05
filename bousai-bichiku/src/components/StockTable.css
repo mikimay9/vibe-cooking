@@ -1,0 +1,194 @@
+.table-wrapper {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.stock-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.stock-table th {
+  background: #f9fafb;
+  padding: 14px 16px;
+  text-align: left;
+  font-weight: 600;
+  color: #4b5563;
+  border-bottom: 1px solid #e5e7eb;
+  white-space: nowrap;
+}
+
+.stock-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #f3f4f6;
+  vertical-align: middle;
+}
+
+.stock-table tbody tr:hover {
+  background: #f9fafb;
+}
+
+.stock-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* アラート行 */
+.alert-row.alert-expired {
+  background: #fef2f2;
+}
+
+.alert-row.alert-expired:hover {
+  background: #fee2e2;
+}
+
+.alert-row.alert-urgent {
+  background: #fff7ed;
+}
+
+.alert-row.alert-urgent:hover {
+  background: #ffedd5;
+}
+
+.alert-row.alert-warning {
+  background: #fffbeb;
+}
+
+.alert-row.alert-warning:hover {
+  background: #fef9c3;
+}
+
+/* テキスト配置 */
+.text-right {
+  text-align: right !important;
+}
+
+.text-center {
+  text-align: center !important;
+}
+
+/* 支店バッジ */
+.branch-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* 保管場所 */
+.storage-text {
+  color: #6b7280;
+  font-size: 13px;
+}
+
+/* 品目名 */
+.item-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.category-icon {
+  font-size: 16px;
+}
+
+/* 数量 */
+.quantity {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.unit {
+  font-weight: 400;
+  color: #9ca3af;
+  margin-left: 4px;
+  font-size: 12px;
+}
+
+/* 消費期限 */
+.expiration {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.expiration-date {
+  font-size: 13px;
+  color: #374151;
+}
+
+.expiration-days {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.expiration-days.level-safe {
+  color: #16a34a;
+}
+
+.expiration-days.level-warning {
+  color: #ca8a04;
+}
+
+.expiration-days.level-urgent {
+  color: #ea580c;
+}
+
+.expiration-days.level-expired {
+  color: #dc2626;
+}
+
+/* 移動ボタン */
+.move-button {
+  padding: 6px 12px;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.move-button:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+/* 空の状態 */
+.table-empty {
+  text-align: center;
+  padding: 60px 20px;
+  background: white;
+  border-radius: 12px;
+  color: #6b7280;
+}
+
+.table-empty .empty-icon {
+  font-size: 48px;
+  display: block;
+  margin-bottom: 12px;
+  opacity: 0.5;
+}
+
+/* レスポンシブ */
+@media (max-width: 900px) {
+  .table-wrapper {
+    overflow-x: auto;
+  }
+  
+  .stock-table {
+    min-width: 700px;
+  }
+  
+  .stock-table th,
+  .stock-table td {
+    padding: 10px 12px;
+  }
+}
