@@ -20,6 +20,7 @@ export const RecipeDetailModal = ({ recipe, isOpen, onClose, onUpdate }: RecipeD
     const [rating, setRating] = useState(3);
     const [frequency, setFrequency] = useState<'biweekly' | 'monthly' | 'quarterly' | 'none'>('none');
     const [workDuration, setWorkDuration] = useState(0);
+    const [ingredients, setIngredients] = useState('');
     const [newArrangement, setNewArrangement] = useState('');
     const [loading, setLoading] = useState(false);
 
@@ -32,6 +33,7 @@ export const RecipeDetailModal = ({ recipe, isOpen, onClose, onUpdate }: RecipeD
             setRating(recipe.child_rating || 3);
             setFrequency(recipe.frequency || 'none');
             setWorkDuration(recipe.work_duration || 0);
+            setIngredients(recipe.ingredients ? recipe.ingredients.join('\n') : '');
         }
     }, [recipe]);
 
@@ -59,6 +61,7 @@ export const RecipeDetailModal = ({ recipe, isOpen, onClose, onUpdate }: RecipeD
                 child_rating: rating,
                 frequency,
                 work_duration: workDuration,
+                ingredients: ingredients.split('\n').filter(line => line.trim() !== ''),
                 arrangements: updatedArrangements,
             })
             .eq('id', recipe.id);
@@ -239,21 +242,17 @@ export const RecipeDetailModal = ({ recipe, isOpen, onClose, onUpdate }: RecipeD
                         </div>
 
                         {/* Ingredients & Steps Display */}
-                        {/* Ingredients Display */}
-                        {recipe.ingredients && recipe.ingredients.length > 0 ? (
-                            <div className="mt-4 pt-4 border-t border-gray-100">
-                                <h3 className="font-bold text-orange-800 mb-2">材料</h3>
-                                <ul className="list-disc list-inside text-sm text-gray-700 bg-orange-50/50 p-2 rounded max-h-60 overflow-y-auto">
-                                    {recipe.ingredients.map((ing, i) => (
-                                        <li key={i}>{ing}</li>
-                                    ))}
-                                </ul>
-                            </div>
-                        ) : (
-                            <div className="mt-4 pt-4 border-t border-gray-100 text-sm text-gray-400">
-                                材料データはありません
-                            </div>
-                        )}
+                        {/* Ingredients Input */}
+                        <div className="mt-4 pt-4 border-t border-gray-100">
+                            <label className="block text-sm font-bold text-gray-600 mb-1">材料 <span className="text-xs font-normal text-gray-400">(1行ずつ)</span></label>
+                            <textarea
+                                value={ingredients}
+                                onChange={(e) => setIngredients(e.target.value)}
+                                rows={6}
+                                placeholder="豚肉 200g&#13;&#10;玉ねぎ 1個"
+                                className="w-full p-2 bg-white border border-gray-200 rounded focus:border-orange-400 outline-none text-sm leading-relaxed"
+                            />
+                        </div>
 
                         {/* Actions */}
                         <div className="pt-4 flex gap-3">
