@@ -14,6 +14,32 @@ export const RecipeForm = ({ onRecipeAdded }: RecipeFormProps) => {
     const [url, setUrl] = useState('');
     const [category, setCategory] = useState<'main' | 'side' | 'soup'>('main');
     const [loading, setLoading] = useState(false);
+    const [fetchingTitle, setFetchingTitle] = useState(false);
+
+    const handleUrlBlur = async () => {
+        if (!url || title) return; // Don't overwrite if title exists or URL empty
+
+        try {
+            new URL(url); // Validate URL format
+        } catch {
+            return;
+        }
+
+        setFetchingTitle(true);
+        try {
+            const res = await fetch(`/api/fetch-title?url=${encodeURIComponent(url)}`);
+            if (res.ok) {
+                const data = await res.json();
+                if (data.title) {
+                    setTitle(data.title);
+                }
+            }
+        } catch (err) {
+            console.error('Failed to fetch title:', err);
+        } finally {
+            setFetchingTitle(false);
+        }
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -107,13 +133,24 @@ export const RecipeForm = ({ onRecipeAdded }: RecipeFormProps) => {
                                 </div>
                                 <div>
                                     <label className="block text-sm font-bold mb-1">URL</label>
-                                    <input
-                                        type="url"
-                                        value={url}
-                                        onChange={(e) => setUrl(e.target.value)}
-                                        className="w-full bg-transparent border-b-2 border-gray-300 focus:border-blue-400 outline-none transition-colors"
-                                        placeholder="https://..."
-                                    />
+                                    <div className="relative">
+                                        <input
+                                            type="url"
+                                            value={url}
+                                            onChange={(e) => setUrl(e.target.value)}
+                                            onBlur={handleUrlBlur}
+                                            className="w-full bg-transparent border-b-2 border-gray-300 focus:border-blue-400 outline-none transition-colors pr-8"
+                                            placeholder="https://..."
+                                        />
+                                        {fetchingTitle && (
+                                            <div className="absolute right-0 top-0 bottom-0 flex items-center">
+                                                <div className="animate-spin h-4 w-4 border-2 border-blue-500 rounded-full border-t-transparent"></div>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <p className="text-[10px] text-gray-400 mt-1">
+                                        URLを入力するとタイトルを自動取得します
+                                    </p>
                                 </div>
                                 <button
                                     type="submit"
