@@ -1,0 +1,114 @@
+import { useState } from 'react';
+import { createPortal } from 'react-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Plus, X } from 'lucide-react';
+import { supabase } from '../lib/supabase';
+
+interface RecipeFormProps {
+    onRecipeAdded: () => void;
+}
+
+export const RecipeForm = ({ onRecipeAdded }: RecipeFormProps) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const [title, setTitle] = useState('');
+    const [url, setUrl] = useState('');
+    const [loading, setLoading] = useState(false);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (!supabase) {
+            alert('Supabaseの設定が完了していません。.envファイルを確認してください。');
+            return;
+        }
+
+        setLoading(true);
+
+        const { error } = await supabase
+            .from('recipes')
+            .insert([
+                {
+                    name: title,
+                    url: url,
+                    frequency: 'monthly', // Default or add selector
+                    child_rating: 3,      // Default or add selector
+                    memo: 'メモなし'       // Default or add input
+                },
+            ]);
+
+        setLoading(false);
+
+        if (error) {
+            alert('エラーが発生しました: ' + error.message);
+        } else {
+            setTitle('');
+            setUrl('');
+            setIsOpen(false);
+            onRecipeAdded();
+        }
+    };
+
+    return (
+        <div className="fixed bottom-6 right-6 z-50">
+            {createPortal(
+                <AnimatePresence>
+                    {isOpen && (
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.8, y: 20 }}
+                            className="fixed bottom-24 right-6 z-[100] mb-4 bg-white p-6 rounded-sm shadow-xl border border-gray-200 w-80 font-hand"
+                            style={{
+                                backgroundImage: 'radial-gradient(#d1d5db 1px, transparent 1px)',
+                                backgroundSize: '24px 24px'
+                            }}
+                        >
+                            <h3 className="text-xl font-bold mb-4 text-ink border-b-2 border-gray-200 pb-1">レシピを追加</h3>
+                            <form onSubmit={handleSubmit} className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-bold mb-1">レシピ名</label>
+                                    <input
+                                        type="text"
+                                        value={title}
+                                        onChange={(e) => setTitle(e.target.value)}
+                                        className="w-full bg-transparent border-b-2 border-gray-300 focus:border-blue-400 outline-none transition-colors"
+                                        placeholder="例：至高のカレー"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold mb-1">URL</label>
+                                    <input
+                                        type="url"
+                                        value={url}
+                                        onChange={(e) => setUrl(e.target.value)}
+                                        className="w-full bg-transparent border-b-2 border-gray-300 focus:border-blue-400 outline-none transition-colors"
+                                        placeholder="https://..."
+                                        required
+                                    />
+                                </div>
+                                <button
+                                    type="submit"
+                                    disabled={loading}
+                                    className="w-full bg-blue-500 text-white font-bold py-2 rounded-sm shadow-sm hover:bg-blue-600 transition-colors disabled:opacity-50"
+                                >
+                                    {loading ? '保存中...' : '本棚に追加'}
+                                </button>
+                            </form>
+                        </motion.div>
+                    )}
+                </AnimatePresence>,
+                document.body
+            )}
+
+            <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => setIsOpen(!isOpen)}
+                className="bg-yellow-400 text-ink p-4 rounded-full shadow-lg border-2 border-white"
+            >
+                {isOpen ? <X size={24} /> : <Plus size={24} />}
+            </motion.button>
+        </div>
+    );
+};

@@ -1,0 +1,37 @@
+@import "tailwindcss";
+
+@theme {
+  --font-hand: "Meiryo UI", "Meiryo", system-ui, sans-serif;
+  --color-paper: #fdfbf7;
+  --color-ink: #1f2937;
+}
+
+body {
+  font-family: var(--font-hand);
+  color: var(--color-ink);
+  background-color: var(--color-paper);
+}
+
+@layer base {
+  body {
+    font-family: var(--font-hand);
+    color: var(--color-ink);
+    background-color: var(--color-paper);
+    background-image: radial-gradient(#e5e7eb 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+}
+
+/* Custom Scrollbar for notebook feel */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
