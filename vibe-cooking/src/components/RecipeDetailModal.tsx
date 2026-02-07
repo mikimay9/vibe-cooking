@@ -18,7 +18,7 @@ export const RecipeDetailModal = ({ recipe, isOpen, onClose, onUpdate }: RecipeD
     const [category, setCategory] = useState<'main' | 'side' | 'soup'>('main');
     const [memo, setMemo] = useState('');
     const [rating, setRating] = useState(3);
-    const [frequency, setFrequency] = useState<'biweekly' | 'monthly' | 'rare'>('monthly');
+    const [frequency, setFrequency] = useState<'biweekly' | 'monthly' | 'quarterly' | 'none'>('none');
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
@@ -28,7 +28,7 @@ export const RecipeDetailModal = ({ recipe, isOpen, onClose, onUpdate }: RecipeD
             setCategory(recipe.category || 'main');
             setMemo(recipe.memo || '');
             setRating(recipe.child_rating || 3);
-            setFrequency(recipe.frequency || 'monthly');
+            setFrequency(recipe.frequency || 'none');
         }
     }, [recipe]);
 
@@ -153,9 +153,10 @@ export const RecipeDetailModal = ({ recipe, isOpen, onClose, onUpdate }: RecipeD
                                     onChange={(e) => setFrequency(e.target.value as any)}
                                     className="w-full p-2 bg-white border border-gray-200 rounded focus:border-orange-400 outline-none"
                                 >
-                                    <option value="biweekly">週1～2回</option>
-                                    <option value="monthly">月1～2回</option>
-                                    <option value="rare">たまに</option>
+                                    <option value="biweekly">隔週</option>
+                                    <option value="monthly">月1回</option>
+                                    <option value="quarterly">2-3か月に1回</option>
+                                    <option value="none">設定なし</option>
                                 </select>
                             </div>
                         </div>

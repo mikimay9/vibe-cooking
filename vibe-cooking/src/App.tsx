@@ -12,7 +12,7 @@ export interface Recipe {
   id: string;
   name: string;
   url: string;
-  frequency: 'biweekly' | 'monthly' | 'rare';
+  frequency: 'biweekly' | 'monthly' | 'quarterly' | 'none';
   child_rating: number;
   memo: string;
   category: 'main' | 'side' | 'soup';

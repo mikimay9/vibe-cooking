@@ -58,7 +58,7 @@ export const RecipeForm = ({ onRecipeAdded }: RecipeFormProps) => {
                     name: title,
                     url: url,
                     category: category,
-                    frequency: 'monthly',
+                    frequency: 'none',
                     child_rating: 3,
                     memo: 'メモなし'
                 },
