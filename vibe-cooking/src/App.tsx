@@ -14,6 +14,7 @@ export interface Recipe {
   frequency: 'biweekly' | 'monthly' | 'rare';
   child_rating: number;
   memo: string;
+  category: 'main' | 'side' | 'soup';
 }
 
 interface WeeklyPlanItem {
@@ -35,6 +36,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [activeRecipe, setActiveRecipe] = useState<Recipe | null>(null);
+  const [activeTab, setActiveTab] = useState<'my_recipes' | 'coop' | 'buzz'>('my_recipes');
 
   const [startDate, setStartDate] = useState(() => {
     const today = new Date();
@@ -238,25 +240,72 @@ function App() {
         <aside className="w-64 flex-shrink-0 flex flex-col border-r border-gray-200 bg-white/80 backdrop-blur-sm relative z-10 shadow-lg">
           <SidebarDroppable>
             <div className="p-4 border-b border-gray-200 bg-orange-50">
-              <h2 className="text-xl font-bold text-orange-800">レシピ本棚</h2>
-              <p className="text-xs text-orange-600">ドラッグして献立へ</p>
+              <h2 className="text-xl font-bold text-orange-800 mb-2">レシピ本棚</h2>
+
+              {/* Tabs */}
+              <div className="flex gap-1 bg-white/50 p-1 rounded-md">
+                <button
+                  onClick={() => setActiveTab('my_recipes')}
+                  className={`flex-1 py-1 text-xs rounded-sm transition-colors ${activeTab === 'my_recipes' ? 'bg-orange-100 text-orange-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-100'}`}
+                >
+                  My
+                </button>
+                <button
+                  onClick={() => setActiveTab('coop')}
+                  className={`flex-1 py-1 text-xs rounded-sm transition-colors ${activeTab === 'coop' ? 'bg-green-100 text-green-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-100'}`}
+                >
+                  Co-op
+                </button>
+                <button
+                  onClick={() => setActiveTab('buzz')}
+                  className={`flex-1 py-1 text-xs rounded-sm transition-colors ${activeTab === 'buzz' ? 'bg-purple-100 text-purple-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-100'}`}
+                >
+                  Buzz
+                </button>
+              </div>
             </div>
+
             <div className="flex-1 overflow-y-auto p-4 space-y-2">
               {!supabase && <p className="text-xs text-red-500">DB未接続</p>}
-              {recipes.map(recipe => (
-                <DraggableRecipe
-                  key={recipe.id}
-                  id={`recipe-${recipe.id}`}
-                  name={recipe.name}
-                />
-              ))}
-              {recipes.length === 0 && !loading && (
-                <p className="text-center text-gray-400 text-sm mt-10">レシピを追加してね</p>
+
+              {activeTab === 'my_recipes' && (
+                <>
+                  {recipes.map(recipe => (
+                    <DraggableRecipe
+                      key={recipe.id}
+                      id={`recipe-${recipe.id}`}
+                      name={recipe.name}
+                      category={recipe.category}
+                    />
+                  ))}
+                  {recipes.length === 0 && !loading && (
+                    <p className="text-center text-gray-400 text-sm mt-10">レシピを追加してね</p>
+                  )}
+                </>
+              )}
+
+              {activeTab === 'coop' && (
+                <div className="text-center text-gray-400 text-sm mt-10 p-4 border-2 border-dashed border-gray-200 rounded-md">
+                  <p className="mb-2">🚚</p>
+                  <p>コープデリ連携機能</p>
+                  <p className="text-xs mt-1">購入履歴から自動で食材リスト・レシピを表示予定</p>
+                </div>
+              )}
+
+              {activeTab === 'buzz' && (
+                <div className="text-center text-gray-400 text-sm mt-10 p-4 border-2 border-dashed border-gray-200 rounded-md">
+                  <p className="mb-2">🐝</p>
+                  <p>バズレシピ巡回</p>
+                  <p className="text-xs mt-1">AIがSNSで話題のレシピを提案予定</p>
+                </div>
               )}
             </div>
-            <div className="p-4 bg-gray-50 border-t border-gray-200">
-              <RecipeForm onRecipeAdded={fetchRecipes} />
-            </div>
+
+            {activeTab === 'my_recipes' && (
+              <div className="p-4 bg-gray-50 border-t border-gray-200">
+                <RecipeForm onRecipeAdded={fetchRecipes} />
+              </div>
+            )}
           </SidebarDroppable>
         </aside>
 

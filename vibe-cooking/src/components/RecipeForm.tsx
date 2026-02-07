@@ -12,6 +12,7 @@ export const RecipeForm = ({ onRecipeAdded }: RecipeFormProps) => {
     const [isOpen, setIsOpen] = useState(false);
     const [title, setTitle] = useState('');
     const [url, setUrl] = useState('');
+    const [category, setCategory] = useState<'main' | 'side' | 'soup'>('main');
     const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -30,9 +31,10 @@ export const RecipeForm = ({ onRecipeAdded }: RecipeFormProps) => {
                 {
                     name: title,
                     url: url,
-                    frequency: 'monthly', // Default or add selector
-                    child_rating: 3,      // Default or add selector
-                    memo: 'メモなし'       // Default or add input
+                    category: category,
+                    frequency: 'monthly',
+                    child_rating: 3,
+                    memo: 'メモなし'
                 },
             ]);
 
@@ -43,6 +45,7 @@ export const RecipeForm = ({ onRecipeAdded }: RecipeFormProps) => {
         } else {
             setTitle('');
             setUrl('');
+            setCategory('main');
             setIsOpen(false);
             onRecipeAdded();
         }
@@ -77,6 +80,32 @@ export const RecipeForm = ({ onRecipeAdded }: RecipeFormProps) => {
                                     />
                                 </div>
                                 <div>
+                                    <label className="block text-sm font-bold mb-1">カテゴリー</label>
+                                    <div className="flex gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => setCategory('main')}
+                                            className={`flex-1 py-1 text-xs border rounded-sm ${category === 'main' ? 'bg-red-100 border-red-400 text-red-700 font-bold' : 'bg-white border-gray-300 text-gray-500'}`}
+                                        >
+                                            主菜
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setCategory('side')}
+                                            className={`flex-1 py-1 text-xs border rounded-sm ${category === 'side' ? 'bg-green-100 border-green-400 text-green-700 font-bold' : 'bg-white border-gray-300 text-gray-500'}`}
+                                        >
+                                            副菜
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setCategory('soup')}
+                                            className={`flex-1 py-1 text-xs border rounded-sm ${category === 'soup' ? 'bg-yellow-100 border-yellow-400 text-yellow-700 font-bold' : 'bg-white border-gray-300 text-gray-500'}`}
+                                        >
+                                            汁物
+                                        </button>
+                                    </div>
+                                </div>
+                                <div>
                                     <label className="block text-sm font-bold mb-1">URL</label>
                                     <input
                                         type="url"
@@ -84,7 +113,6 @@ export const RecipeForm = ({ onRecipeAdded }: RecipeFormProps) => {
                                         onChange={(e) => setUrl(e.target.value)}
                                         className="w-full bg-transparent border-b-2 border-gray-300 focus:border-blue-400 outline-none transition-colors"
                                         placeholder="https://..."
-                                        required
                                     />
                                 </div>
                                 <button
