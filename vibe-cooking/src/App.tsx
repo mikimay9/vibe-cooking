@@ -18,6 +18,7 @@ export interface Recipe {
   category: 'main' | 'side' | 'soup';
   ingredients?: string[];
   steps?: string[];
+  arrangements?: { date: string; text: string }[];
 }
 
 interface WeeklyPlanItem {

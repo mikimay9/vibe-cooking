@@ -19,6 +19,7 @@ export const RecipeDetailModal = ({ recipe, isOpen, onClose, onUpdate }: RecipeD
     const [memo, setMemo] = useState('');
     const [rating, setRating] = useState(3);
     const [frequency, setFrequency] = useState<'biweekly' | 'monthly' | 'quarterly' | 'none'>('none');
+    const [newArrangement, setNewArrangement] = useState('');
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
@@ -38,6 +39,14 @@ export const RecipeDetailModal = ({ recipe, isOpen, onClose, onUpdate }: RecipeD
 
         setLoading(true);
 
+        const updatedArrangements = recipe.arrangements || [];
+        if (newArrangement.trim()) {
+            updatedArrangements.push({
+                date: new Date().toISOString().split('T')[0],
+                text: newArrangement.trim()
+            });
+        }
+
         const { error } = await supabase
             .from('recipes')
             .update({
@@ -47,6 +56,7 @@ export const RecipeDetailModal = ({ recipe, isOpen, onClose, onUpdate }: RecipeD
                 memo,
                 child_rating: rating,
                 frequency,
+                arrangements: updatedArrangements,
             })
             .eq('id', recipe.id);
 
@@ -57,6 +67,7 @@ export const RecipeDetailModal = ({ recipe, isOpen, onClose, onUpdate }: RecipeD
         } else {
             onUpdate();
             onClose();
+            setNewArrangement(''); // Reset input
         }
     };
 
@@ -170,6 +181,32 @@ export const RecipeDetailModal = ({ recipe, isOpen, onClose, onUpdate }: RecipeD
                                 rows={3}
                                 placeholder="例：にんじんを入れると美味しい / 味が薄いので醤油多め"
                                 className="w-full p-2 bg-yellow-50/50 border border-yellow-200 rounded focus:border-orange-400 outline-none text-sm leading-relaxed resize-none"
+                            />
+                        </div>
+
+                        {/* Arrangements (History) */}
+                        <div>
+                            <label className="block text-sm font-bold text-gray-600 mb-1">アレンジ履歴</label>
+
+                            {/* Existing Arrangements */}
+                            {recipe.arrangements && recipe.arrangements.length > 0 && (
+                                <div className="mb-2 space-y-2">
+                                    {recipe.arrangements.map((item, index) => (
+                                        <div key={index} className="bg-yellow-50/50 p-2 rounded border border-yellow-100 text-sm">
+                                            <div className="text-xs text-gray-400 mb-1">{item.date}</div>
+                                            <div className="text-gray-700 whitespace-pre-wrap">{item.text}</div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* New Arrangement Input */}
+                            <textarea
+                                value={newArrangement}
+                                onChange={(e) => setNewArrangement(e.target.value)}
+                                rows={2}
+                                placeholder="今回のアレンジ：しいたけをエリンギに変更..."
+                                className="w-full p-2 bg-white border border-gray-200 rounded focus:border-orange-400 outline-none text-sm transition-colors"
                             />
                         </div>
 
