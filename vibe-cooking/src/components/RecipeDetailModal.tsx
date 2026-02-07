@@ -186,7 +186,7 @@ export const RecipeDetailModal = ({ recipe, isOpen, onClose, onUpdate }: RecipeD
                         </div>
 
                         {/* Ingredients & Steps Display */}
-                        {(recipe?.ingredients?.length > 0 || recipe?.steps?.length > 0) && (
+                        {((recipe?.ingredients?.length ?? 0) > 0 || (recipe?.steps?.length ?? 0) > 0) && (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pt-4 border-t border-gray-100">
                                 {recipe.ingredients && recipe.ingredients.length > 0 && (
                                     <div>
