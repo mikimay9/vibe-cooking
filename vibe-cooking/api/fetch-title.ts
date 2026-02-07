@@ -17,6 +17,8 @@ export default async function handler(request: Request) {
         const response = await fetch(url, {
             headers: {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                'Accept-Language': 'ja,en-US;q=0.7,en;q=0.3',
             },
         });
 
@@ -24,19 +26,38 @@ export default async function handler(request: Request) {
             throw new Error(`Failed to fetch URL: ${response.status}`);
         }
 
-        const contentType = response.headers.get('content-type') || '';
-        if (!contentType.includes('text/html')) {
-            throw new Error('Not an HTML page');
+        const buffer = await response.arrayBuffer();
+        const decoder = new TextDecoder('utf-8');
+        const html = decoder.decode(buffer);
+
+        let title = '';
+
+        // 1. Try og:title
+        const ogMatch = html.match(/<meta\s+property="og:title"\s+content="([^"]+)"/i);
+        if (ogMatch) title = ogMatch[1];
+
+        // 2. Try <title>
+        if (!title) {
+            const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+            if (titleMatch) title = titleMatch[1];
         }
 
-        const html = await response.text();
+        // 3. Try h1
+        if (!title) {
+            const h1Match = html.match(/<h1[^>]*>([^<]+)<\/h1>/i);
+            if (h1Match) title = h1Match[1];
+        }
 
-        // Simple regex to extract title
-        const match = html.match(/<title[^>]*>([^<]+)<\/title>/i);
-        let title = match ? match[1] : '';
-
-        // Clean up title (remove whitespace, decode entities if needed - basic handling)
-        title = title.trim().replace(/\s+/g, ' ');
+        // Clean up title
+        if (title) {
+            title = title.replace(/&amp;/g, '&')
+                .replace(/&lt;/g, '<')
+                .replace(/&gt;/g, '>')
+                .replace(/&quot;/g, '"')
+                .replace(/&#39;/g, "'")
+                .trim()
+                .replace(/\s+/g, ' ');
+        }
 
         return new Response(JSON.stringify({ title }), {
             status: 200,
@@ -45,7 +66,6 @@ export default async function handler(request: Request) {
                 'Cache-Control': 's-maxage=3600, stale-while-revalidate',
             },
         });
-
     } catch (error: any) {
         return new Response(JSON.stringify({ error: error.message || 'Failed to fetch title' }), {
             status: 500,
