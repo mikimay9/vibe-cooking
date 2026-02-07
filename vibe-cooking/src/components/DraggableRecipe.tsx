@@ -7,19 +7,21 @@ interface DraggableRecipeProps {
     image_url?: string;
     category?: 'main' | 'side' | 'soup';
     onDelete?: () => void;
+    onEdit?: () => void;
 }
 
-export const DraggableRecipe = ({ id, name, image_url, category, onDelete }: DraggableRecipeProps) => {
+export const DraggableRecipe = ({ id, name, image_url, category, onDelete, onEdit }: DraggableRecipeProps) => {
+    // ... hooks ...
     const { attributes, listeners, setNodeRef, transform } = useDraggable({
         id: id,
-        data: { name, image_url, category }, // Pass data for drag overlay
+        data: { name, image_url, category },
     });
 
     const style = {
         transform: CSS.Translate.toString(transform),
     };
 
-    // Category Styles
+    // ... getCategoryStyle ...
     const getCategoryStyle = () => {
         switch (category) {
             case 'main': return 'border-l-4 border-l-red-400 bg-red-50/50';
@@ -49,18 +51,33 @@ export const DraggableRecipe = ({ id, name, image_url, category, onDelete }: Dra
                 <span className="text-sm font-hand truncate flex-1">{name}</span>
             </div>
 
-            {onDelete && (
-                <button
-                    onClick={(e) => {
-                        e.stopPropagation(); // Stop drag start
-                        onDelete();
-                    }}
-                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm hover:bg-red-600"
-                    title="削除"
-                >
-                    ×
-                </button>
-            )}
+            {/* Action Buttons */}
+            <div className="absolute -top-2 -right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                {onEdit && (
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onEdit();
+                        }}
+                        className="bg-blue-500 text-white rounded-full w-5 h-5 flex items-center justify-center shadow-sm hover:bg-blue-600"
+                        title="編集"
+                    >
+                        ✎
+                    </button>
+                )}
+                {onDelete && (
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onDelete();
+                        }}
+                        className="bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center shadow-sm hover:bg-red-600"
+                        title="削除"
+                    >
+                        ×
+                    </button>
+                )}
+            </div>
         </div>
     );
 };

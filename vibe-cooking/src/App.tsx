@@ -4,6 +4,7 @@ import type { DragEndEvent } from '@dnd-kit/core';
 import { addDays, isTuesday, previousTuesday, format } from 'date-fns';
 import { supabase } from './lib/supabase';
 import { RecipeForm } from './components/RecipeForm';
+import { RecipeDetailModal } from './components/RecipeDetailModal';
 import { WeeklyBoard } from './components/WeeklyBoard';
 import { DraggableRecipe } from './components/DraggableRecipe';
 
@@ -37,6 +38,7 @@ function App() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [activeRecipe, setActiveRecipe] = useState<Recipe | null>(null);
   const [activeTab, setActiveTab] = useState<'my_recipes' | 'coop' | 'buzz'>('my_recipes');
+  const [editingRecipe, setEditingRecipe] = useState<Recipe | null>(null);
 
   const [startDate, setStartDate] = useState(() => {
     const today = new Date();
@@ -276,6 +278,7 @@ function App() {
                       id={`recipe-${recipe.id}`}
                       name={recipe.name}
                       category={recipe.category}
+                      onEdit={() => setEditingRecipe(recipe)}
                     />
                   ))}
                   {recipes.length === 0 && !loading && (
@@ -326,6 +329,13 @@ function App() {
           />
         </main>
       </div>
+
+      <RecipeDetailModal
+        recipe={editingRecipe}
+        isOpen={!!editingRecipe}
+        onClose={() => setEditingRecipe(null)}
+        onUpdate={fetchRecipes}
+      />
 
       <DragOverlay>
         {activeId && activeRecipe ? (
