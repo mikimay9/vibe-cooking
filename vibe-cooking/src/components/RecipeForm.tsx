@@ -13,8 +13,10 @@ export const RecipeForm = ({ onRecipeAdded }: RecipeFormProps) => {
     const [title, setTitle] = useState('');
     const [url, setUrl] = useState('');
     const [category, setCategory] = useState<'main' | 'side' | 'soup'>('main');
+    const [ingredients, setIngredients] = useState('');
+    const [steps, setSteps] = useState('');
     const [loading, setLoading] = useState(false);
-    const [fetchingTitle, setFetchingTitle] = useState(false);
+    const [fetchingData, setFetchingData] = useState(false);
 
     const handleUrlBlur = async () => {
         if (!url || title) return; // Don't overwrite if title exists or URL empty
@@ -25,19 +27,23 @@ export const RecipeForm = ({ onRecipeAdded }: RecipeFormProps) => {
             return;
         }
 
-        setFetchingTitle(true);
+        setFetchingData(true);
         try {
-            const res = await fetch(`/api/fetch-title?url=${encodeURIComponent(url)}`);
+            const res = await fetch(`/api/extract-recipe?url=${encodeURIComponent(url)}`);
             if (res.ok) {
                 const data = await res.json();
-                if (data.title) {
-                    setTitle(data.title);
+                if (data.title) setTitle(data.title);
+                if (data.ingredients && data.ingredients.length > 0) {
+                    setIngredients(data.ingredients.join('\n'));
+                }
+                if (data.steps && data.steps.length > 0) {
+                    setSteps(data.steps.join('\n'));
                 }
             }
         } catch (err) {
-            console.error('Failed to fetch title:', err);
+            console.error('Failed to extract recipe:', err);
         } finally {
-            setFetchingTitle(false);
+            setFetchingData(false);
         }
     };
 
@@ -142,15 +148,35 @@ export const RecipeForm = ({ onRecipeAdded }: RecipeFormProps) => {
                                             className="w-full bg-transparent border-b-2 border-gray-300 focus:border-blue-400 outline-none transition-colors pr-8"
                                             placeholder="https://..."
                                         />
-                                        {fetchingTitle && (
+                                        {fetchingData && (
                                             <div className="absolute right-0 top-0 bottom-0 flex items-center">
                                                 <div className="animate-spin h-4 w-4 border-2 border-blue-500 rounded-full border-t-transparent"></div>
                                             </div>
                                         )}
                                     </div>
                                     <p className="text-[10px] text-gray-400 mt-1">
-                                        URLを入力するとタイトルを自動取得します
+                                        URLを入力するとタイトル・材料・手順を自動取得します
                                     </p>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-bold mb-1">材料 <span className="text-xs font-normal text-gray-400">(1行ずつ)</span></label>
+                                        <textarea
+                                            value={ingredients}
+                                            onChange={(e) => setIngredients(e.target.value)}
+                                            className="w-full h-32 bg-transparent border-2 border-gray-200 rounded p-2 focus:border-blue-400 outline-none transition-colors text-sm"
+                                            placeholder="豚肉 200g&#13;&#10;玉ねぎ 1個"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-bold mb-1">作り方 <span className="text-xs font-normal text-gray-400">(1行ずつ)</span></label>
+                                        <textarea
+                                            value={steps}
+                                            onChange={(e) => setSteps(e.target.value)}
+                                            className="w-full h-32 bg-transparent border-2 border-gray-200 rounded p-2 focus:border-blue-400 outline-none transition-colors text-sm"
+                                            placeholder="1. 材料を切る&#13;&#10;2. 炒める"
+                                        />
+                                    </div>
                                 </div>
                                 <button
                                     type="submit"

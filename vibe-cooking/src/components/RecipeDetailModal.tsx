@@ -185,6 +185,32 @@ export const RecipeDetailModal = ({ recipe, isOpen, onClose, onUpdate }: RecipeD
                             />
                         </div>
 
+                        {/* Ingredients & Steps Display */}
+                        {(recipe?.ingredients?.length > 0 || recipe?.steps?.length > 0) && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pt-4 border-t border-gray-100">
+                                {recipe.ingredients && recipe.ingredients.length > 0 && (
+                                    <div>
+                                        <h3 className="font-bold text-orange-800 mb-2">材料</h3>
+                                        <ul className="list-disc list-inside text-sm text-gray-700 bg-orange-50/50 p-2 rounded max-h-40 overflow-y-auto">
+                                            {recipe.ingredients.map((ing, i) => (
+                                                <li key={i}>{ing}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                                {recipe.steps && recipe.steps.length > 0 && (
+                                    <div>
+                                        <h3 className="font-bold text-orange-800 mb-2">作り方</h3>
+                                        <ol className="list-decimal list-inside text-sm text-gray-700 space-y-1 max-h-40 overflow-y-auto">
+                                            {recipe.steps.map((step, i) => (
+                                                <li key={i}>{step}</li>
+                                            ))}
+                                        </ol>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
                         {/* Actions */}
                         <div className="pt-4 flex gap-3">
                             <button

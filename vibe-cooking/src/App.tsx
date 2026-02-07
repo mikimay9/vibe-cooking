@@ -16,6 +16,8 @@ export interface Recipe {
   child_rating: number;
   memo: string;
   category: 'main' | 'side' | 'soup';
+  ingredients?: string[];
+  steps?: string[];
 }
 
 interface WeeklyPlanItem {
