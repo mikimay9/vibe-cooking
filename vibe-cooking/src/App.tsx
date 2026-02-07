@@ -17,7 +17,7 @@ export interface Recipe {
   memo: string;
   category: 'main' | 'side' | 'soup';
   ingredients?: string[];
-  steps?: string[];
+  work_duration?: number; // minutes
   arrangements?: { date: string; text: string }[];
 }
 

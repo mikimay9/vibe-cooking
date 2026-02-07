@@ -14,7 +14,7 @@ export const RecipeForm = ({ onRecipeAdded }: RecipeFormProps) => {
     const [url, setUrl] = useState('');
     const [category, setCategory] = useState<'main' | 'side' | 'soup'>('main');
     const [ingredients, setIngredients] = useState('');
-    const [steps, setSteps] = useState('');
+    const [workDuration, setWorkDuration] = useState(0);
     const [loading, setLoading] = useState(false);
     const [fetchingData, setFetchingData] = useState(false);
 
@@ -36,8 +36,8 @@ export const RecipeForm = ({ onRecipeAdded }: RecipeFormProps) => {
                 if (data.ingredients && data.ingredients.length > 0) {
                     setIngredients(data.ingredients.join('\n'));
                 }
-                if (data.steps && data.steps.length > 0) {
-                    setSteps(data.steps.join('\n'));
+                if (data.totalTime) {
+                    setWorkDuration(data.totalTime);
                 }
             }
         } catch (err) {
@@ -66,7 +66,9 @@ export const RecipeForm = ({ onRecipeAdded }: RecipeFormProps) => {
                     category: category,
                     frequency: 'none',
                     child_rating: 3,
-                    memo: 'メモなし'
+                    memo: 'メモなし',
+                    ingredients: ingredients.split('\n').filter(line => line.trim() !== ''),
+                    work_duration: workDuration,
                 },
             ]);
 
@@ -169,12 +171,13 @@ export const RecipeForm = ({ onRecipeAdded }: RecipeFormProps) => {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-bold mb-1">作り方 <span className="text-xs font-normal text-gray-400">(1行ずつ)</span></label>
-                                        <textarea
-                                            value={steps}
-                                            onChange={(e) => setSteps(e.target.value)}
-                                            className="w-full h-32 bg-transparent border-2 border-gray-200 rounded p-2 focus:border-blue-400 outline-none transition-colors text-sm"
-                                            placeholder="1. 材料を切る&#13;&#10;2. 炒める"
+                                        <label className="block text-sm font-bold mb-1">調理時間 <span className="text-xs font-normal text-gray-400">(分)</span></label>
+                                        <input
+                                            type="number"
+                                            value={workDuration}
+                                            onChange={(e) => setWorkDuration(Number(e.target.value))}
+                                            className="w-full h-12 bg-transparent border-2 border-gray-200 rounded p-2 focus:border-blue-400 outline-none transition-colors text-sm"
+                                            placeholder="15"
                                         />
                                     </div>
                                 </div>

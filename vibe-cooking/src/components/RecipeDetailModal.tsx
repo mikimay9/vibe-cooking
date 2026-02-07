@@ -19,6 +19,7 @@ export const RecipeDetailModal = ({ recipe, isOpen, onClose, onUpdate }: RecipeD
     const [memo, setMemo] = useState('');
     const [rating, setRating] = useState(3);
     const [frequency, setFrequency] = useState<'biweekly' | 'monthly' | 'quarterly' | 'none'>('none');
+    const [workDuration, setWorkDuration] = useState(0);
     const [newArrangement, setNewArrangement] = useState('');
     const [loading, setLoading] = useState(false);
 
@@ -30,6 +31,7 @@ export const RecipeDetailModal = ({ recipe, isOpen, onClose, onUpdate }: RecipeD
             setMemo(recipe.memo || '');
             setRating(recipe.child_rating || 3);
             setFrequency(recipe.frequency || 'none');
+            setWorkDuration(recipe.work_duration || 0);
         }
     }, [recipe]);
 
@@ -56,6 +58,7 @@ export const RecipeDetailModal = ({ recipe, isOpen, onClose, onUpdate }: RecipeD
                 memo,
                 child_rating: rating,
                 frequency,
+                work_duration: workDuration,
                 arrangements: updatedArrangements,
             })
             .eq('id', recipe.id);
@@ -158,6 +161,19 @@ export const RecipeDetailModal = ({ recipe, isOpen, onClose, onUpdate }: RecipeD
                                 </div>
                             </div>
                             <div className="flex-1">
+                                <label className="block text-sm font-bold text-gray-600 mb-1">調理時間 (分)</label>
+                                <input
+                                    type="number"
+                                    value={workDuration}
+                                    onChange={(e) => setWorkDuration(Number(e.target.value))}
+                                    placeholder="15"
+                                    className="w-full p-2 bg-white border border-gray-200 rounded focus:border-orange-400 outline-none"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex gap-4">
+                            <div className="flex-1">
                                 <label className="block text-sm font-bold text-gray-600 mb-1">頻度</label>
                                 <select
                                     value={frequency}
@@ -223,28 +239,19 @@ export const RecipeDetailModal = ({ recipe, isOpen, onClose, onUpdate }: RecipeD
                         </div>
 
                         {/* Ingredients & Steps Display */}
-                        {((recipe?.ingredients?.length ?? 0) > 0 || (recipe?.steps?.length ?? 0) > 0) && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pt-4 border-t border-gray-100">
-                                {recipe.ingredients && recipe.ingredients.length > 0 && (
-                                    <div>
-                                        <h3 className="font-bold text-orange-800 mb-2">材料</h3>
-                                        <ul className="list-disc list-inside text-sm text-gray-700 bg-orange-50/50 p-2 rounded max-h-40 overflow-y-auto">
-                                            {recipe.ingredients.map((ing, i) => (
-                                                <li key={i}>{ing}</li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                )}
-                                {recipe.steps && recipe.steps.length > 0 && (
-                                    <div>
-                                        <h3 className="font-bold text-orange-800 mb-2">作り方</h3>
-                                        <ol className="list-decimal list-inside text-sm text-gray-700 space-y-1 max-h-40 overflow-y-auto">
-                                            {recipe.steps.map((step, i) => (
-                                                <li key={i}>{step}</li>
-                                            ))}
-                                        </ol>
-                                    </div>
-                                )}
+                        {/* Ingredients Display */}
+                        {recipe.ingredients && recipe.ingredients.length > 0 ? (
+                            <div className="mt-4 pt-4 border-t border-gray-100">
+                                <h3 className="font-bold text-orange-800 mb-2">材料</h3>
+                                <ul className="list-disc list-inside text-sm text-gray-700 bg-orange-50/50 p-2 rounded max-h-60 overflow-y-auto">
+                                    {recipe.ingredients.map((ing, i) => (
+                                        <li key={i}>{ing}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        ) : (
+                            <div className="mt-4 pt-4 border-t border-gray-100 text-sm text-gray-400">
+                                材料データはありません
                             </div>
                         )}
 
@@ -269,7 +276,7 @@ export const RecipeDetailModal = ({ recipe, isOpen, onClose, onUpdate }: RecipeD
                     </form>
                 </motion.div>
             </div>
-        </AnimatePresence>,
+        </AnimatePresence >,
         document.body
     );
 };

@@ -39,13 +39,27 @@ export default async function handler(request: Request) {
             image: '',
             description: '',
             ingredients: [] as string[],
-            steps: [] as string[],
+            totalTime: 0, // minutes
+        };
+
+        // Helper to parse ISO 8601 duration (PT1H30M) to minutes
+        const parseDuration = (isoDuration: string) => {
+            if (!isoDuration) return 0;
+            const match = isoDuration.match(/P(?:([0-9]+)Y)?(?:([0-9]+)M)?(?:([0-9]+)W)?(?:([0-9]+)D)?T(?:([0-9]+)H)?(?:([0-9]+)M)?(?:([0-9]+)S)?/);
+            if (!match) return 0;
+            const [_, y, mo, w, d, h, m, s] = match;
+            let minutes = 0;
+            if (h) minutes += parseInt(h) * 60;
+            if (m) minutes += parseInt(m);
+            return minutes;
         };
 
         // Strategy 1: JSON-LD
         $('script[type="application/ld+json"]').each((_, el) => {
             try {
-                const data = JSON.parse($(el).html() || '{}');
+                const content = $(el).html();
+                if (!content) return;
+                const data = JSON.parse(content);
                 const graphs = Array.isArray(data) ? data : (data['@graph'] || [data]);
 
                 const recipe = graphs.find((g: any) => g['@type'] === 'Recipe' || g['@type']?.includes('Recipe'));
@@ -61,18 +75,12 @@ export default async function handler(request: Request) {
                             : [recipe.recipeIngredient];
                     }
 
-                    if (recipe.recipeInstructions) {
-                        const instructions = recipe.recipeInstructions;
-                        if (Array.isArray(instructions)) {
-                            recipeData.steps = instructions.map((step: any) => {
-                                if (typeof step === 'string') return step;
-                                if (step.text) return step.text;
-                                if (step.name) return step.name;
-                                return '';
-                            }).filter(Boolean);
-                        } else if (typeof instructions === 'string') {
-                            recipeData.steps = [instructions];
-                        }
+                    // Extract Duration
+                    if (recipe.totalTime) {
+                        recipeData.totalTime = parseDuration(recipe.totalTime);
+                    } else if (recipe.cookTime || recipe.prepTime) {
+                        // Fallback: sum of cook and prep if total not available
+                        recipeData.totalTime = parseDuration(recipe.cookTime) + parseDuration(recipe.prepTime);
                     }
                 }
             } catch (e) {
@@ -88,8 +96,7 @@ export default async function handler(request: Request) {
             recipeData.image = $('meta[property="og:image"]').attr('content') || '';
         }
 
-        // Strategy 3: Heuristics (if ingredients/steps missing) - Very basic fallback
-        // This is hard to get right universally, but common class names might help
+        // Strategy 3: Heuristics
         if (recipeData.ingredients.length === 0) {
             // Cookpad specific (example)
             $('#ingredients_list .ingredient_name').each((_, el) => {
