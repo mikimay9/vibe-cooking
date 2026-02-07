@@ -26,9 +26,7 @@ export default async function handler(request: Request) {
             throw new Error(`Failed to fetch URL: ${response.status}`);
         }
 
-        const buffer = await response.arrayBuffer();
-        const decoder = new TextDecoder('utf-8');
-        const html = decoder.decode(buffer);
+        const html = await response.text();
 
         let title = '';
 
@@ -38,14 +36,20 @@ export default async function handler(request: Request) {
 
         // 2. Try <title>
         if (!title) {
-            const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+            const titleMatch = html.match(/<title[^>]*>([\s\S]*?)<\/title>/im);
             if (titleMatch) title = titleMatch[1];
         }
 
         // 3. Try h1
         if (!title) {
-            const h1Match = html.match(/<h1[^>]*>([^<]+)<\/h1>/i);
+            const h1Match = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/im);
             if (h1Match) title = h1Match[1];
+        }
+
+        // 4. Try h2
+        if (!title) {
+            const h2Match = html.match(/<h2[^>]*>([\s\S]*?)<\/h2>/im);
+            if (h2Match) title = h2Match[1];
         }
 
         // Clean up title
