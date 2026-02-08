@@ -120,7 +120,9 @@ export const FlyerAnalysisView = ({ onAddRecipe, existingRecipes }: FlyerAnalysi
                 let errorDetails = text;
                 try {
                     const json = JSON.parse(text);
-                    errorDetails = json.error || json.message || text;
+                    // Combine error and details for visibility
+                    errorDetails = [json.error, json.details].filter(Boolean).join(': ');
+                    if (!errorDetails) errorDetails = text;
                 } catch {
                     // ignore
                 }
