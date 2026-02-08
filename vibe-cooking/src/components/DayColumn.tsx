@@ -1,7 +1,7 @@
 import { useDroppable } from '@dnd-kit/core';
 import { format, isSaturday, isFriday } from 'date-fns';
 import { ja } from 'date-fns/locale';
-import { Briefcase, Home, Sparkles } from 'lucide-react';
+import { Briefcase, Home, Gift, Beer } from 'lucide-react';
 import { DraggableRecipe } from './DraggableRecipe';
 
 interface Recipe {
@@ -21,6 +21,7 @@ interface DayColumnProps {
     plans: WeeklyPlanItem[];
     onToggleDayType: () => void;
     onDeletePlan: (id: string) => void;
+    onSoupGacha: () => void;
 }
 
 const DroppableSlot = ({ id, label, children, isOver }: { id: string, label: string, children?: React.ReactNode, isOver: boolean }) => {
@@ -34,7 +35,7 @@ const DroppableSlot = ({ id, label, children, isOver }: { id: string, label: str
     );
 };
 
-export const DayColumn = ({ date, dayType, plans, onToggleDayType, onDeletePlan }: DayColumnProps) => {
+export const DayColumn = ({ date, dayType, plans, onToggleDayType, onDeletePlan, onSoupGacha }: DayColumnProps) => {
     const dateKey = format(date, 'yyyy-MM-dd');
     const dayStr = format(date, 'E', { locale: ja });
     const isWeekendParty = (isFriday(date) || isSaturday(date));
@@ -55,7 +56,7 @@ export const DayColumn = ({ date, dayType, plans, onToggleDayType, onDeletePlan 
                         {dayStr}
                     </span>
                     <span className="text-sm text-gray-500">{format(date, 'M/d')}</span>
-                    {isWeekendParty && <Sparkles size={16} className="text-yellow-500 animate-pulse" />}
+                    {isWeekendParty && <Beer size={16} className="text-yellow-600 animate-bounce" />}
                 </div>
 
                 <button
@@ -81,7 +82,18 @@ export const DayColumn = ({ date, dayType, plans, onToggleDayType, onDeletePlan 
             </div>
 
             <DroppableSlot id={`${dateKey}-soup`} label="汁物" isOver={false}>
-                {soup && <DraggableRecipe id={`plan-${soup.id}`} name={soup.recipe.name} onDelete={() => onDeletePlan(soup.id)} />}
+                <div className="flex justify-between items-start">
+                    {soup && <DraggableRecipe id={`plan-${soup.id}`} name={soup.recipe.name} onDelete={() => onDeletePlan(soup.id)} />}
+                    {!soup && (
+                        <button
+                            onClick={onSoupGacha}
+                            className="text-pink-400 hover:text-pink-600 transition-colors p-1 transform hover:rotate-12"
+                            title="スープガチャを回す"
+                        >
+                            <Gift size={18} />
+                        </button>
+                    )}
+                </div>
             </DroppableSlot>
 
         </div>

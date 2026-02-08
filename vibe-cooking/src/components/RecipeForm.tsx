@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, X } from 'lucide-react';
@@ -6,10 +6,19 @@ import { supabase } from '../lib/supabase';
 
 interface RecipeFormProps {
     onRecipeAdded: () => void;
+    isOpen: boolean;
+    onOpenChange: (isOpen: boolean) => void;
+    initialUrl?: string;
+    initialData?: {
+        name?: string;
+        ingredients?: string[];
+        category?: 'main' | 'side' | 'soup';
+        memo?: string;
+    };
 }
 
-export const RecipeForm = ({ onRecipeAdded }: RecipeFormProps) => {
-    const [isOpen, setIsOpen] = useState(false);
+export const RecipeForm = ({ onRecipeAdded, isOpen, onOpenChange, initialUrl = '', initialData }: RecipeFormProps) => {
+    // const [isOpen, setIsOpen] = useState(false); // Hoisted
     const [title, setTitle] = useState('');
     const [url, setUrl] = useState('');
     const [category, setCategory] = useState<'main' | 'side' | 'soup'>('main');
@@ -17,6 +26,27 @@ export const RecipeForm = ({ onRecipeAdded }: RecipeFormProps) => {
     const [workDuration, setWorkDuration] = useState(0);
     const [loading, setLoading] = useState(false);
     const [fetchingData, setFetchingData] = useState(false);
+
+    // Sync state when form opens or initial props change
+    useEffect(() => {
+        if (isOpen) {
+            if (initialUrl) {
+                setUrl(initialUrl);
+            }
+            if (initialData) {
+                if (initialData.name) setTitle(initialData.name);
+                if (initialData.ingredients) setIngredients(initialData.ingredients.join('\n'));
+                if (initialData.category) setCategory(initialData.category);
+            }
+        }
+    }, [isOpen, initialUrl, initialData]);
+
+    // Trigger fetch when URL is set via initialUrl AND no initialData provided (priority to explicit data)
+    useEffect(() => {
+        if (isOpen && initialUrl && url === initialUrl && !initialData) {
+            handleUrlBlur();
+        }
+    }, [url, isOpen, initialUrl, initialData]);
 
     const handleUrlBlur = async () => {
         if (!url || title) return; // Don't overwrite if title exists or URL empty
@@ -80,7 +110,9 @@ export const RecipeForm = ({ onRecipeAdded }: RecipeFormProps) => {
             setTitle('');
             setUrl('');
             setCategory('main');
-            setIsOpen(false);
+            setIngredients('');
+            setWorkDuration(0);
+            onOpenChange(false);
             onRecipeAdded();
         }
     };
@@ -198,7 +230,7 @@ export const RecipeForm = ({ onRecipeAdded }: RecipeFormProps) => {
             <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
-                onClick={() => setIsOpen(!isOpen)}
+                onClick={() => onOpenChange(!isOpen)}
                 className="bg-yellow-400 text-ink p-4 rounded-full shadow-lg border-2 border-white"
             >
                 {isOpen ? <X size={24} /> : <Plus size={24} />}

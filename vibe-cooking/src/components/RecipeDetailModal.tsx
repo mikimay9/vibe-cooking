@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Save } from 'lucide-react';
-import type { Recipe } from '../App';
+import type { Recipe } from '../types';
 import { supabase } from '../lib/supabase';
 
 interface RecipeDetailModalProps {

@@ -31,6 +31,9 @@ export const DraggableRecipe = ({ id, name, image_url, category, onDelete, onEdi
         }
     };
 
+    // Work Mode Logic: Quick recipes
+    const isQuick = (name.includes('虚無') || name.includes('レンジ') || name.includes('爆速') || name.includes('早') || name.includes('一撃'));
+
     return (
         <div
             ref={setNodeRef}
@@ -40,13 +43,18 @@ export const DraggableRecipe = ({ id, name, image_url, category, onDelete, onEdi
             className={`group relative p-3 rounded-sm shadow-sm border border-gray-200 mb-2 cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow select-none ${getCategoryStyle()}`}
         >
             <div className="flex items-center gap-2">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 relative
                     ${category === 'main' ? 'bg-red-100 text-red-600' : ''}
                     ${category === 'side' ? 'bg-green-100 text-green-600' : ''}
                     ${category === 'soup' ? 'bg-yellow-100 text-yellow-600' : ''}
                     ${!category ? 'bg-gray-100 text-gray-600' : ''}
                 `}>
                     {name.slice(0, 1)}
+                    {isQuick && (
+                        <div className="absolute -top-1 -right-1 bg-yellow-400 text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] shadow-sm border border-white animate-pulse">
+                            ⚡
+                        </div>
+                    )}
                 </div>
                 <span className="text-sm font-hand truncate flex-1">{name}</span>
             </div>

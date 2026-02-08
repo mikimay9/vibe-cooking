@@ -1,9 +1,7 @@
 import { load } from 'cheerio';
 
 export const config = {
-    runtime: 'edge', // Should switch to nodejs for cheerio usually, but cheerio works in edge if lightweight.
-    // Actually Vercel Edge has issues with some Node APIs. 
-    // Let's stick to Node.js runtime for cheerio/robustness.
+    // Switch to nodejs for cheerio robustness
     runtime: 'nodejs',
 };
 
@@ -34,7 +32,7 @@ export default async function handler(request: Request) {
         const html = await response.text();
         const $ = load(html);
 
-        let recipeData = {
+        const recipeData = {
             title: '',
             image: '',
             description: '',
@@ -47,7 +45,7 @@ export default async function handler(request: Request) {
             if (!isoDuration) return 0;
             const match = isoDuration.match(/P(?:([0-9]+)Y)?(?:([0-9]+)M)?(?:([0-9]+)W)?(?:([0-9]+)D)?T(?:([0-9]+)H)?(?:([0-9]+)M)?(?:([0-9]+)S)?/);
             if (!match) return 0;
-            const [_, y, mo, w, d, h, m, s] = match;
+            const [, , , , , h, m] = match;
             let minutes = 0;
             if (h) minutes += parseInt(h) * 60;
             if (m) minutes += parseInt(m);
