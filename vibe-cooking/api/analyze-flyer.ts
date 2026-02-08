@@ -8,15 +8,29 @@ export const config = {
 
 export default async function handler(request: VercelRequest, response: VercelResponse) {
     console.log('Analyze Flyer API called');
-    if (request.method !== 'POST') {
-        return response.status(405).json({ error: 'Method Not Allowed' });
-    }
+    console.log('Request Method:', request.method);
 
     try {
+        if (request.method !== 'POST') {
+            console.warn('Invalid method:', request.method);
+            return response.status(405).json({
+                error: 'Method Not Allowed',
+                details: `Received method: ${request.method}`
+            });
+        }
+
         const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-        const { image, images, recipes } = request.body;
+        const { image, images, recipes } = request.body || {}; // Keep 'image' for legacy support
+        console.log('Request Body Keys:', Object.keys(request.body || {}));
+        console.log('Image count:', images?.length);
+
         // Support both single 'image' (legacy) and 'images' array
         const imageList = images || (image ? [image] : []);
+
+        if (!images || !Array.isArray(images) || images.length === 0) {
+            console.error('No images found in payload');
+            return response.status(400).json({ error: 'No images provided' });
+        }
 
         // Mock response if no key or specific debug flag (optional)
         if (!apiKey) {

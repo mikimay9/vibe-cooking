@@ -439,7 +439,7 @@ function App() {
               {activeTab === 'shopping' && (
                 <div className="h-full">
                   <FlyerAnalysisView
-                    onAddRecipe={handleAddRecipeFromFlyerData}
+                    onAddRecipe={(recipe: Partial<Recipe>) => handleAddRecipeFromFlyerData(recipe)}
                     existingRecipes={recipes}
                   />
                 </div>
