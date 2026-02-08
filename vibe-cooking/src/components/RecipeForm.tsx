@@ -46,6 +46,7 @@ export const RecipeForm = ({ onRecipeAdded, isOpen, onOpenChange, initialUrl = '
         if (isOpen && initialUrl && url === initialUrl && !initialData) {
             handleUrlBlur();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [url, isOpen, initialUrl, initialData]);
 
     const handleUrlBlur = async () => {

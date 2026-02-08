@@ -1,18 +1,22 @@
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 export const config = {
     maxDuration: 60, // Allow up to 60 seconds for processing
 };
 
-export default async function handler(request, response) {
+export default async function handler(request: VercelRequest, response: VercelResponse) {
+    console.log('Analyze Flyer API called');
     if (request.method !== 'POST') {
         return response.status(405).json({ error: 'Method Not Allowed' });
     }
 
     try {
         const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-        const { image, recipes } = request.body;
+        const { image, images, recipes } = request.body;
+        // Support both single 'image' (legacy) and 'images' array
+        const imageList = images || (image ? [image] : []);
 
         // Mock response if no key or specific debug flag (optional)
         if (!apiKey) {
@@ -29,16 +33,25 @@ export default async function handler(request, response) {
         // Use gemini-1.5-flash for speed and cost effectiveness, or gemini-pro-vision
         const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
-        if (!image) {
+        if (imageList.length === 0) {
             return response.status(400).json({ error: 'No image provided' });
         }
 
-        // Clean base64 string (remove data:image/jpeg;base64, prefix if present)
-        const base64Data = image.includes(',') ? image.split(',')[1] : image;
+        // Prepare image parts
+        const imageParts = imageList.map((imgStr: string) => {
+            // Clean base64 string (remove data:image/jpeg;base64, prefix if present)
+            const base64Data = imgStr.includes(',') ? imgStr.split(',')[1] : imgStr;
+            return {
+                inlineData: {
+                    data: base64Data,
+                    mimeType: 'image/jpeg',
+                },
+            };
+        });
 
         const prompt = `
         You are a helpful Japanese cooking assistant.
-        1. Analyze this flyer image and identify "Bargain Ingredients" (特売品) or "Seasonal Ingredients" (旬の食材). List up to 5 main items.
+        1. Analyze these flyer images and identify "Bargain Ingredients" (特売品) or "Seasonal Ingredients" (旬の食材). List up to 5 main items.
         2. Based on these ingredients, and knowing the user might have these recipes: ${JSON.stringify(recipes || [])}, suggest 3 suitable recipes.
            - Prioritize recipes from the user's list if they match the ingredients.
            - If user recipes don't match well, suggest standard Japanese home cooking recipes.
@@ -54,14 +67,7 @@ export default async function handler(request, response) {
         Return ONLY valid JSON. Do not use Markdown formatting.
         `;
 
-        const imagePart = {
-            inlineData: {
-                data: base64Data,
-                mimeType: 'image/jpeg',
-            },
-        };
-
-        const result = await model.generateContent([prompt, imagePart]);
+        const result = await model.generateContent([prompt, ...imageParts]);
         const responseText = result.response.text();
 
         // Simple cleanup to ensure JSON
@@ -78,8 +84,9 @@ export default async function handler(request, response) {
 
         return response.status(200).json(data);
 
-    } catch (error) {
+    } catch (error: unknown) {
         console.error('Analysis failed:', error);
-        return response.status(500).json({ error: 'Failed to analyze flyer', details: error.message });
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        return response.status(500).json({ error: 'Failed to analyze flyer', details: errorMessage });
     }
 }

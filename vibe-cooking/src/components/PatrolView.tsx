@@ -83,6 +83,7 @@ export const PatrolView = ({ onAddRecipe }: PatrolViewProps) => {
 
     useEffect(() => {
         fetchPatrolRecipes();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const formatDate = (isoString: string) => {

@@ -21,9 +21,9 @@ export const SoupGachaModal = ({ isOpen, onClose, onConfirm, recipes }: SoupGach
         if (isOpen) {
             setStep('ready');
             setDisplayRecipe(null);
-            setResultRecipe(null);
             setIsMisoMode(false);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isOpen]);
 
     const handleStartGacha = () => {

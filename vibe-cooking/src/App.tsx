@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { DndContext, DragOverlay, useSensor, useSensors, MouseSensor, TouchSensor, useDroppable } from '@dnd-kit/core';
-import type { DragEndEvent } from '@dnd-kit/core';
+import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import { addDays, isTuesday, previousTuesday, format } from 'date-fns';
 import { supabase } from './lib/supabase';
 import { RecipeForm } from './components/RecipeForm';
@@ -83,7 +83,7 @@ function App() {
       .lte('date', format(endDate, 'yyyy-MM-dd'))
       .order('created_at', { ascending: true });
 
-    if (!plansError) setPlans(plansData as any);
+    if (!plansError) setPlans((plansData as unknown) as WeeklyPlanItem[]);
 
     // Fetch Day Settings
     const { data: settingsData, error: settingsError } = await supabase
@@ -96,6 +96,7 @@ function App() {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     fetchRecipes();
   }, []);
 
@@ -109,9 +110,9 @@ function App() {
     if (!error) fetchWeeklyPlan();
   };
 
-  const handleDragStart = (event: any) => {
+  const handleDragStart = (event: DragStartEvent) => {
     const { active } = event;
-    setActiveId(active.id);
+    setActiveId(String(active.id));
     const idStr = String(active.id);
     if (idStr.startsWith('recipe-')) {
       const rId = idStr.replace('recipe-', '');
@@ -241,7 +242,7 @@ function App() {
       setRecipeFormInitialUrl('');
       setRecipeFormInitialData({
         name: input.name,
-        category: input.category as any,
+        category: input.category as 'main' | 'side' | 'soup',
         ingredients: input.ingredients,
         memo: input.memo
       });

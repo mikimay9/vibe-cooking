@@ -1,6 +1,6 @@
 
 import { useState, useRef } from 'react';
-import { Upload, Camera, Loader2, ChefHat, Sparkles } from 'lucide-react';
+import { Upload, Camera, Loader2, ChefHat, Sparkles, X } from 'lucide-react';
 import type { Recipe } from '../types';
 
 interface FlyerAnalysisViewProps {
@@ -17,46 +17,122 @@ interface AnalysisResult {
     }[];
 }
 
+// Helper to resize image
+const resizeImage = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target?.result as string;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                // Tweak: Lower resolution and quality to avoid Vercel 4.5MB payload limit
+                const MAX_WIDTH = 500;
+                const scaleSize = MAX_WIDTH / img.width;
+                const width = Math.min(MAX_WIDTH, img.width);
+                const height = img.height * (width < img.width ? scaleSize : 1);
+
+                canvas.width = width;
+                canvas.height = height;
+
+                const ctx = canvas.getContext('2d');
+                ctx?.drawImage(img, 0, 0, width, height);
+                // Compress to JPEG 50% quality
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.5);
+                resolve(dataUrl);
+            };
+            img.onerror = (error) => reject(error);
+        };
+        reader.onerror = (error) => reject(error);
+    });
+};
+
 export const FlyerAnalysisView = ({ onAddRecipe, existingRecipes }: FlyerAnalysisViewProps) => {
-    const [image, setImage] = useState<string | null>(null);
+    const [images, setImages] = useState<string[]>([]);
     const [analyzing, setAnalyzing] = useState(false);
     const [result, setResult] = useState<AnalysisResult | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setImage(reader.result as string);
-                setResult(null);
-            };
-            reader.readAsDataURL(file);
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (files && files.length > 0) {
+            setResult(null);
+            const newImages: string[] = [];
+
+            // Process up to 2 images
+            const count = Math.min(files.length, 2 - images.length);
+
+            for (let i = 0; i < count; i++) {
+                try {
+                    const resized = await resizeImage(files[i]);
+                    newImages.push(resized);
+                } catch (err) {
+                    console.error('Resize failed', err);
+                }
+            }
+
+            setImages(prev => [...prev, ...newImages].slice(0, 2));
         }
+        // Reset input so same file can be selected again if needed
+        if (fileInputRef.current) fileInputRef.current.value = '';
+    };
+
+    const removeImage = (index: number) => {
+        setImages(prev => prev.filter((_, i) => i !== index));
+        setResult(null);
     };
 
     const handleAnalyze = async () => {
-        if (!image) return;
+        if (images.length === 0) return;
         setAnalyzing(true);
         setResult(null);
+
+        // Check payload size roughly
+        const totalSize = images.reduce((acc, img) => acc + img.length, 0);
+        console.log('Sending payload size (Approx characters):', totalSize, 'Limit: 4000000');
+
+        // Base64 string length ~ 1.33 * size in bytes. 
+        // Vercel limit is 4.5MB (approx 5.9M chars). 
+        // We set safe limit at 4MB (approx 4M bytes * 1.33 = 5.3M chars?). 
+        // Actually 4MB bytes = 4 * 1024 * 1024 = 4,194,304 bytes.
+        // In Base64: 4,194,304 * 1.37 approx = 5,746,196 chars.
+        // Setting limit at 4,500,000 chars is very safe (~3.2MB bytes).
+        if (totalSize > 4500000) {
+            alert(`画像サイズが大きすぎます(現在: ${(totalSize / 1024 / 1024).toFixed(2)}MB相当)。枚数を減らすか、トリミングしてください。`);
+            setAnalyzing(false);
+            return;
+        }
 
         try {
             const response = await fetch('/api/analyze-flyer', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    image,
+                    images, // Send array of images
                     recipes: existingRecipes.map(r => ({ name: r.name, id: r.id }))
                 })
             });
 
-            if (!response.ok) throw new Error('Analysis failed');
+            if (!response.ok) {
+                // Try to get text if json fails
+                const text = await response.text();
+                let errorDetails = text;
+                try {
+                    const json = JSON.parse(text);
+                    errorDetails = json.error || json.message || text;
+                } catch {
+                    // ignore
+                }
+                throw new Error(`Server Error (${response.status}): ${errorDetails}`);
+            }
 
             const data = await response.json();
             setResult(data);
-        } catch (error) {
-            console.error(error);
-            alert('分析に失敗しました。時間をおいて再度お試しください。');
+        } catch (error: unknown) {
+            console.error('Full Error Object:', error);
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            alert(`分析に失敗しました: ${errorMessage}`);
         } finally {
             setAnalyzing(false);
         }
@@ -69,40 +145,50 @@ export const FlyerAnalysisView = ({ onAddRecipe, existingRecipes }: FlyerAnalysi
             </h2>
 
             {/* Image Upload Area */}
-            <div
-                className={`border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer transition-colors
-                    ${image ? 'border-orange-300 bg-orange-50' : 'border-gray-300 hover:border-gray-400 hover:bg-gray-50'}
-                `}
-                onClick={() => fileInputRef.current?.click()}
-            >
-                {image ? (
-                    <div className="relative w-full max-h-48 overflow-hidden rounded-lg">
-                        <img src={image} alt="Uploaded flyer" className="w-full object-cover" />
-                        <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                            <span className="text-white font-bold bg-black/50 px-3 py-1 rounded-full">変更する</span>
+            {images.length < 2 && (
+                <div
+                    className="border-2 border-dashed border-gray-300 rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer hover:border-orange-300 hover:bg-orange-50 transition-colors mb-4"
+                    onClick={() => fileInputRef.current?.click()}
+                >
+                    <Upload className="text-gray-400 mb-2" size={32} />
+                    <p className="text-sm text-gray-500 font-bold">チラシ画像をアップロード</p>
+                    <p className="text-xs text-gray-400 mt-1">
+                        最大2枚まで（表・裏など）<br />
+                        タップして選択または撮影
+                    </p>
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        className="hidden"
+                        accept="image/*"
+                        multiple
+                        onChange={handleFileChange}
+                    />
+                </div>
+            )}
+
+            {/* Image Previews */}
+            {images.length > 0 && (
+                <div className="grid grid-cols-2 gap-2 mb-4">
+                    {images.map((img, idx) => (
+                        <div key={idx} className="relative aspect-[3/4] rounded-lg overflow-hidden border border-gray-200 shadow-sm bg-white">
+                            <img src={img} alt={`Flyer ${idx + 1}`} className="w-full h-full object-contain" />
+                            <button
+                                onClick={() => removeImage(idx)}
+                                className="absolute top-1 right-1 bg-black/50 text-white rounded-full p-1 hover:bg-black/70 transition-colors"
+                            >
+                                <X size={14} />
+                            </button>
                         </div>
-                    </div>
-                ) : (
-                    <>
-                        <Upload className="text-gray-400 mb-2" size={32} />
-                        <p className="text-sm text-gray-500 font-bold">チラシ画像をアップロード</p>
-                        <p className="text-xs text-gray-400 mt-1">タップして選択または撮影</p>
-                    </>
-                )}
-                <input
-                    type="file"
-                    ref={fileInputRef}
-                    className="hidden"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                />
-            </div>
+                    ))}
+                </div>
+            )}
 
             {/* Action Button */}
-            {image && !analyzing && !result && (
+            {images.length > 0 && !analyzing && !result && (
                 <button
                     onClick={handleAnalyze}
-                    className="mt-4 w-full bg-gradient-to-r from-orange-500 to-pink-500 text-white font-bold py-3 rounded-xl shadow-md flex items-center justify-center gap-2 transform active:scale-95 transition-all"
+                    className="mt-2 w-full bg-gradient-to-r from-orange-500 to-pink-500 text-white font-bold py-3 rounded-xl shadow-md flex items-center justify-center gap-2 transform active:scale-95 transition-all"
                 >
                     <Sparkles size={20} /> AIで特売レシピを診断
                 </button>
@@ -160,7 +246,7 @@ export const FlyerAnalysisView = ({ onAddRecipe, existingRecipes }: FlyerAnalysi
                     </div>
 
                     <button
-                        onClick={() => { setImage(null); setResult(null); }}
+                        onClick={() => { setImages([]); setResult(null); }}
                         className="w-full text-gray-400 text-xs text-center hover:text-gray-600 underline"
                     >
                         他のチラシを読み込む

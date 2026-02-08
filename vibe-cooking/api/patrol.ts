@@ -179,8 +179,9 @@ async function fetchYoutubeFeed(source: PatrolSource): Promise<PatrolRecipe[]> {
         });
 
         return items.slice(0, 5);
-    } catch (e: any) {
-        console.error(`Error fetching YouTube for ${source.name}:`, e.message);
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        console.error(`Error fetching YouTube for ${source.name}:`, errorMessage);
         return [];
     }
 }
@@ -236,9 +237,10 @@ export default async function handler(request: Request) {
                 'Cache-Control': 's-maxage=600, stale-while-revalidate=300',
             },
         });
-    } catch (error: any) {
+    } catch (error: unknown) {
         // This catch block handles errors in the logic ABOVE Promise.all (unlikely)
-        return new Response(JSON.stringify({ error: error.message }), {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        return new Response(JSON.stringify({ error: errorMessage }), {
             status: 500,
             headers: { ...corsHeaders, 'content-type': 'application/json' },
         });

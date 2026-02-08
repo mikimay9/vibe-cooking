@@ -70,8 +70,10 @@ export default async function handler(request: Request) {
                 'Cache-Control': 's-maxage=3600, stale-while-revalidate',
             },
         });
-    } catch (error: any) {
-        return new Response(JSON.stringify({ error: error.message || 'Failed to fetch title' }), {
+    } catch (error: unknown) {
+        console.error('Error fetching title:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        return new Response(JSON.stringify({ error: 'Failed to fetch title', details: errorMessage }), {
             status: 500,
             headers: { 'content-type': 'application/json' },
         });

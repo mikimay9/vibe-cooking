@@ -60,7 +60,8 @@ export default async function handler(request: Request) {
                 const data = JSON.parse(content);
                 const graphs = Array.isArray(data) ? data : (data['@graph'] || [data]);
 
-                const recipe = graphs.find((g: any) => g['@type'] === 'Recipe' || g['@type']?.includes('Recipe'));
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const recipe = graphs.find((g: Record<string, any>) => g['@type'] === 'Recipe' || (Array.isArray(g['@type']) && g['@type'].includes('Recipe')));
 
                 if (recipe) {
                     recipeData.title = recipe.name || '';
@@ -110,8 +111,9 @@ export default async function handler(request: Request) {
             },
         });
 
-    } catch (error: any) {
-        return new Response(JSON.stringify({ error: error.message || 'Failed to extract recipe' }), {
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Failed to extract recipe';
+        return new Response(JSON.stringify({ error: errorMessage }), {
             status: 500,
             headers: { 'content-type': 'application/json' },
         });
