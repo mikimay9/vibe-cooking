@@ -440,7 +440,7 @@ function App() {
                 <div className="h-full">
                   <FlyerAnalysisView
                     // Explicitly passing (recipe: Partial<Recipe>) => void to satisfy type checker
-                    onAddRecipe={(recipe: Partial<Recipe>) => handleAddRecipeFromFlyerData(recipe)}
+                    onAddRecipe={(recipe: Partial<Recipe>) => handleAddRecipeFromFlyerData(recipe) as any}
                     existingRecipes={recipes}
                   />
                 </div>
