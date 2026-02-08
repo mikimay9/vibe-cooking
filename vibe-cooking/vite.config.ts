@@ -20,6 +20,7 @@ const apiMiddleware = (): Plugin => {
           if (fs.existsSync(apiPath)) {
             try {
               // Load the function using jiti (handles TS on the fly)
+              console.log('Jiti loading API file:', apiPath);
               const module = await jiti.import(apiPath) as { default: Function };
               const handler = module.default;
 

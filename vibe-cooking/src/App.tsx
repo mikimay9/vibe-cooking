@@ -439,6 +439,7 @@ function App() {
               {activeTab === 'shopping' && (
                 <div className="h-full">
                   <FlyerAnalysisView
+                    // Explicitly passing (recipe: Partial<Recipe>) => void to satisfy type checker
                     onAddRecipe={(recipe: Partial<Recipe>) => handleAddRecipeFromFlyerData(recipe)}
                     existingRecipes={recipes}
                   />

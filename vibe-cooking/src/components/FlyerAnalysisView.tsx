@@ -105,7 +105,7 @@ export const FlyerAnalysisView = ({ onAddRecipe, existingRecipes }: FlyerAnalysi
         }
 
         try {
-            const response = await fetch('/api/analyze-flyer', {
+            const response = await fetch('/api/flyer-analysis', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
