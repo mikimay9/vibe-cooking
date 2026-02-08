@@ -44,8 +44,8 @@ export default async function handler(request: VercelRequest, response: VercelRe
         }
 
         const genAI = new GoogleGenerativeAI(apiKey);
-        // Use gemini-1.5-flash for speed and cost effectiveness, or gemini-pro-vision
-        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+        // Use gemini-2.0-flash as 1.5-flash is not available for this user
+        const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
         if (imageList.length === 0) {
             return response.status(400).json({ error: 'No image provided' });
