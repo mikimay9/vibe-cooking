@@ -1,7 +1,8 @@
 import { useDroppable } from '@dnd-kit/core';
 import { format, isSaturday, isFriday } from 'date-fns';
 import { ja } from 'date-fns/locale';
-import { Briefcase, Home } from 'lucide-react';
+import { Briefcase, Home, Beer } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { DraggableRecipe } from './DraggableRecipe';
 import { GachaButton } from './GachaButton';
 
@@ -69,6 +70,23 @@ export const DayColumn = ({ date, dayType, plans, onToggleDayType, onDeletePlan,
                     </span>
                     <span className={`text-xs font-bold tracking-widest ${isWeekendParty ? 'text-black' : 'text-gray-400'}`}>{format(date, 'MM.dd')}</span>
                 </div>
+
+                {isWeekendParty && (
+                    <motion.div
+                        animate={{
+                            rotate: [0, -10, 10, -10, 0],
+                            y: [0, -5, 0],
+                        }}
+                        transition={{
+                            duration: 2,
+                            repeat: Infinity,
+                            ease: "easeInOut"
+                        }}
+                        className="absolute top-2 right-14 text-black z-20"
+                    >
+                        <Beer size={24} strokeWidth={3} fill="#ffeb3b" />
+                    </motion.div>
+                )}
 
                 <button
                     onClick={onToggleDayType}
