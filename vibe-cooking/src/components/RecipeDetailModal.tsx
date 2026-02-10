@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Save } from 'lucide-react';
+import { X, Save, Trash2 } from 'lucide-react';
 import type { Recipe } from '../types';
 import { supabase } from '../lib/supabase';
 
@@ -24,6 +24,7 @@ export const RecipeDetailModal = ({ recipe, isOpen, onClose, onUpdate }: RecipeD
     const [ingredients, setIngredients] = useState('');
     const [newArrangement, setNewArrangement] = useState('');
     const [loading, setLoading] = useState(false);
+    const [isHibernating, setIsHibernating] = useState(false);
 
     // eslint-disable-next-line
     useEffect(() => {
@@ -32,10 +33,11 @@ export const RecipeDetailModal = ({ recipe, isOpen, onClose, onUpdate }: RecipeD
             setUrl(recipe.url || '');
             setCategory(recipe.category || 'main');
             setMemo(recipe.memo || '');
-            setRating(recipe.child_rating || 3);
+            setRating(recipe.rating || 3); // Updated to use 'rating' based on new schema, fallback to 3
             setFrequency(recipe.frequency || 'none');
             setWorkDuration(recipe.work_duration || 0);
             setIngredients(recipe.ingredients ? recipe.ingredients.join('\n') : '');
+            setIsHibernating(recipe.is_hibernating || false);
         }
     }, [recipe]);
 
@@ -60,11 +62,12 @@ export const RecipeDetailModal = ({ recipe, isOpen, onClose, onUpdate }: RecipeD
                 url,
                 category,
                 memo,
-                child_rating: rating,
+                rating: rating, // Updated column name
                 frequency,
                 work_duration: workDuration,
                 ingredients: ingredients.split('\n').filter(line => line.trim() !== ''),
                 arrangements: updatedArrangements,
+                is_hibernating: isHibernating, // New field
             })
             .eq('id', recipe.id);
 
@@ -79,6 +82,22 @@ export const RecipeDetailModal = ({ recipe, isOpen, onClose, onUpdate }: RecipeD
         }
     };
 
+    const handleDelete = async () => {
+        if (!supabase || !recipe) return;
+        if (!confirm('本当に削除しますか？')) return;
+
+        setLoading(true);
+        const { error } = await supabase.from('recipes').delete().eq('id', recipe.id);
+        setLoading(false);
+
+        if (error) {
+            alert('削除に失敗しました');
+        } else {
+            onUpdate();
+            onClose();
+        }
+    };
+
     if (!isOpen || !recipe) return null;
 
     return createPortal(
@@ -89,76 +108,96 @@ export const RecipeDetailModal = ({ recipe, isOpen, onClose, onUpdate }: RecipeD
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     onClick={onClose}
-                    className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+                    className="absolute inset-0 bg-black/80 backdrop-blur-sm"
                 />
                 <motion.div
                     initial={{ opacity: 0, scale: 0.9, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                    className="relative bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden font-hand border-2 border-orange-100"
-                    style={{
-                        backgroundImage: 'radial-gradient(#f3f4f6 1px, transparent 1px)',
-                        backgroundSize: '24px 24px'
-                    }}
+                    className="relative bg-white p-6 shadow-brutal border-4 border-black w-full max-w-md max-h-[90vh] overflow-y-auto font-body z-50"
                 >
                     {/* Header */}
-                    <div className="flex justify-between items-center p-4 border-b border-gray-100 bg-white/80">
-                        <h3 className="text-xl font-bold text-orange-800">レシピを編集</h3>
-                        <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded-full transition-colors">
-                            <X size={24} className="text-gray-400" />
+                    <div className="flex justify-between items-center mb-6 border-b-4 border-black pb-2">
+                        <h3 className="text-3xl font-black italic tracking-tighter text-black uppercase transform -skew-x-12">EDIT PROJECT</h3>
+                        <button onClick={onClose} className="p-1 hover:bg-black hover:text-white transition-colors border-2 border-transparent hover:border-black">
+                            <X size={24} strokeWidth={3} />
                         </button>
                     </div>
 
                     {/* Form */}
-                    <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+                    <form onSubmit={handleSubmit} className="space-y-5">
                         {/* Name */}
                         <div>
-                            <label className="block text-sm font-bold text-gray-600 mb-1">料理名</label>
+                            <label className="block text-xs font-black mb-1 uppercase tracking-widest bg-black text-white inline-block px-1">PROJECT NAME</label>
                             <input
                                 type="text"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
-                                className="w-full p-2 bg-white border border-gray-200 rounded focus:border-orange-400 focus:ring-1 focus:ring-orange-200 outline-none transition-all"
+                                className="w-full bg-gray-100 border-2 border-black p-2 focus:bg-neon-yellow/20 focus:border-neon-pink outline-none transition-colors font-bold"
                                 required
                             />
                         </div>
 
-                        {/* Category */}
+                        {/* Status (Hibernate) */}
                         <div>
-                            <label className="block text-sm font-bold text-gray-600 mb-1">カテゴリー</label>
+                            <label className="block text-xs font-black mb-1 uppercase tracking-widest bg-black text-white inline-block px-1">STATUS</label>
                             <div className="flex gap-2">
-                                {[
-                                    { id: 'main', label: '主菜', color: 'bg-red-100 text-red-700 border-red-200' },
-                                    { id: 'side', label: '副菜', color: 'bg-green-100 text-green-700 border-green-200' },
-                                    { id: 'soup', label: '汁物', color: 'bg-yellow-100 text-yellow-700 border-yellow-200' }
-                                ].map((cat) => (
-                                    <button
-                                        key={cat.id}
-                                        type="button"
-                                        onClick={() => setCategory(cat.id as 'main' | 'side' | 'soup')}
-                                        className={`flex-1 py-2 rounded-md border-2 text-sm font-bold transition-all ${category === cat.id
-                                            ? `${cat.color} shadow-sm`
-                                            : 'bg-gray-50 border-gray-100 text-gray-400'
-                                            }`}
-                                    >
-                                        {cat.label}
-                                    </button>
-                                ))}
+                                <button
+                                    type="button"
+                                    onClick={() => setIsHibernating(false)}
+                                    className={`flex-1 py-2 text-xs border-2 border-black font-black uppercase tracking-wider transition-all ${!isHibernating ? 'bg-black text-white' : 'bg-white text-gray-400 hover:bg-gray-100'}`}
+                                >
+                                    ACTIVE
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setIsHibernating(true)}
+                                    className={`flex-1 py-2 text-xs border-2 border-black font-black uppercase tracking-wider transition-all ${isHibernating ? 'bg-blue-600 text-white shadow-[2px_2px_0px_0px_#000]' : 'bg-white text-gray-400 hover:bg-gray-100'}`}
+                                >
+                                    HIBERNATE 💤
+                                </button>
                             </div>
                         </div>
 
-                        {/* Rating & Frequency */}
+                        {/* Category */}
+                        <div>
+                            <label className="block text-xs font-black mb-1 uppercase tracking-widest bg-black text-white inline-block px-1">CATEGORY</label>
+                            <div className="flex gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setCategory('main')}
+                                    className={`flex-1 py-2 text-xs border-2 border-black font-black uppercase tracking-wider transition-all ${category === 'main' ? 'bg-red-500 text-white shadow-[2px_2px_0px_0px_#000]' : 'bg-white text-gray-400 hover:bg-gray-100'}`}
+                                >
+                                    MAIN
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setCategory('side')}
+                                    className={`flex-1 py-2 text-xs border-2 border-black font-black uppercase tracking-wider transition-all ${category === 'side' ? 'bg-green-500 text-black shadow-[2px_2px_0px_0px_#000]' : 'bg-white text-gray-400 hover:bg-gray-100'}`}
+                                >
+                                    SIDE
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setCategory('soup')}
+                                    className={`flex-1 py-2 text-xs border-2 border-black font-black uppercase tracking-wider transition-all ${category === 'soup' ? 'bg-yellow-400 text-black shadow-[2px_2px_0px_0px_#000]' : 'bg-white text-gray-400 hover:bg-gray-100'}`}
+                                >
+                                    SOUP
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Rating & Work Duration */}
                         <div className="flex gap-4">
                             <div className="flex-1">
-                                <label className="block text-sm font-bold text-gray-600 mb-1">お気に入り度</label>
-                                <div className="flex gap-1">
+                                <label className="block text-xs font-black mb-1 uppercase tracking-widest bg-black text-white inline-block px-1">RATING</label>
+                                <div className="flex gap-1 border-2 border-black p-2 bg-white justify-center">
                                     {[1, 2, 3].map((star) => (
                                         <button
                                             key={star}
                                             type="button"
                                             onClick={() => setRating(star)}
-                                            className={`text-2xl transition-transform hover:scale-110 ${rating >= star ? 'text-yellow-400' : 'text-gray-200'
-                                                }`}
+                                            className={`text-2xl leading-none transition-transform hover:scale-110 ${rating >= star ? 'text-neon-yellow drop-shadow-[1px_1px_0_#000]' : 'text-gray-200'}`}
                                         >
                                             ★
                                         </button>
@@ -166,93 +205,68 @@ export const RecipeDetailModal = ({ recipe, isOpen, onClose, onUpdate }: RecipeD
                                 </div>
                             </div>
                             <div className="flex-1">
-                                <label className="block text-sm font-bold text-gray-600 mb-1">調理時間 (分)</label>
+                                <label className="block text-xs font-black mb-1 uppercase tracking-widest bg-black text-white inline-block px-1">TIME (MIN)</label>
                                 <input
                                     type="number"
                                     value={workDuration}
                                     onChange={(e) => setWorkDuration(Number(e.target.value))}
-                                    placeholder="15"
-                                    className="w-full p-2 bg-white border border-gray-200 rounded focus:border-orange-400 outline-none"
+                                    className="w-full h-[52px] bg-gray-50 border-2 border-black p-2 focus:bg-white outline-none transition-colors text-lg font-black text-center"
                                 />
                             </div>
                         </div>
 
-                        <div className="flex gap-4">
-                            <div className="flex-1">
-                                <label className="block text-sm font-bold text-gray-600 mb-1">頻度</label>
-                                <select
-                                    value={frequency}
-                                    onChange={(e) => setFrequency(e.target.value as 'biweekly' | 'monthly' | 'quarterly' | 'none')}
-                                    className="w-full p-2 bg-white border border-gray-200 rounded focus:border-orange-400 outline-none"
-                                >
-                                    <option value="biweekly">隔週</option>
-                                    <option value="monthly">月1回</option>
-                                    <option value="quarterly">2-3か月に1回</option>
-                                    <option value="none">設定なし</option>
-                                </select>
-                            </div>
+                        {/* Ingredients */}
+                        <div>
+                            <label className="block text-xs font-black mb-1 uppercase tracking-widest bg-black text-white inline-block px-1">MATERIALS</label>
+                            <textarea
+                                value={ingredients}
+                                onChange={(e) => setIngredients(e.target.value)}
+                                rows={5}
+                                className="w-full bg-gray-50 border-2 border-black p-2 focus:bg-white outline-none transition-colors text-xs font-mono leading-relaxed"
+                            />
                         </div>
 
                         {/* Memo */}
                         <div>
-                            <label className="block text-sm font-bold text-gray-600 mb-1">自分流メモ</label>
+                            <label className="block text-xs font-black mb-1 uppercase tracking-widest bg-black text-white inline-block px-1">MEMO</label>
                             <textarea
                                 value={memo}
                                 onChange={(e) => setMemo(e.target.value)}
-                                rows={3}
-                                placeholder="例：にんじんを入れると美味しい / 味が薄いので醤油多め"
-                                className="w-full p-2 bg-yellow-50/50 border border-yellow-200 rounded focus:border-orange-400 outline-none text-sm leading-relaxed resize-none"
+                                rows={2}
+                                className="w-full bg-yellow-50 border-2 border-black p-2 focus:bg-white outline-none transition-colors text-xs font-mono resize-none leading-relaxed"
                             />
                         </div>
 
                         {/* Arrangements (History) */}
                         <div>
-                            <label className="block text-sm font-bold text-gray-600 mb-1">アレンジ履歴</label>
-
-                            {/* Existing Arrangements */}
+                            <label className="block text-xs font-black mb-1 uppercase tracking-widest bg-black text-white inline-block px-1">LOGS</label>
                             {recipe.arrangements && recipe.arrangements.length > 0 && (
-                                <div className="mb-2 space-y-2">
+                                <div className="mb-2 space-y-2 border-2 border-black bg-gray-100 p-2 max-h-32 overflow-y-auto">
                                     {recipe.arrangements.map((item, index) => (
-                                        <div key={index} className="bg-yellow-50/50 p-2 rounded border border-yellow-100 text-sm">
-                                            <div className="text-xs text-gray-400 mb-1">{item.date}</div>
-                                            <div className="text-gray-700 whitespace-pre-wrap">{item.text}</div>
+                                        <div key={index} className="text-xs border-b border-gray-300 last:border-0 pb-1 mb-1 last:pb-0 last:mb-0">
+                                            <span className="font-mono text-gray-500 mr-2">[{item.date}]</span>
+                                            <span className="font-bold">{item.text}</span>
                                         </div>
                                     ))}
                                 </div>
                             )}
-
-                            {/* New Arrangement Input */}
                             <textarea
                                 value={newArrangement}
                                 onChange={(e) => setNewArrangement(e.target.value)}
                                 rows={2}
-                                placeholder="今回のアレンジ：しいたけをエリンギに変更..."
-                                className="w-full p-2 bg-white border border-gray-200 rounded focus:border-orange-400 outline-none text-sm transition-colors"
+                                placeholder="ADD NEW LOG..."
+                                className="w-full bg-white border-2 border-black p-2 focus:bg-neon-cyan/10 outline-none text-xs transition-colors"
                             />
                         </div>
 
                         {/* URL */}
                         <div>
-                            <label className="block text-sm font-bold text-gray-600 mb-1">参考URL</label>
+                            <label className="block text-xs font-black mb-1 uppercase tracking-widest bg-black text-white inline-block px-1">URL</label>
                             <input
                                 type="url"
                                 value={url}
                                 onChange={(e) => setUrl(e.target.value)}
-                                placeholder="https://..."
-                                className="w-full p-2 bg-white border border-gray-200 rounded text-sm text-gray-500 focus:text-ink focus:border-orange-400 outline-none"
-                            />
-                        </div>
-
-                        {/* Ingredients & Steps Display */}
-                        {/* Ingredients Input */}
-                        <div className="mt-4 pt-4 border-t border-gray-100">
-                            <label className="block text-sm font-bold text-gray-600 mb-1">材料 <span className="text-xs font-normal text-gray-400">(1行ずつ)</span></label>
-                            <textarea
-                                value={ingredients}
-                                onChange={(e) => setIngredients(e.target.value)}
-                                rows={6}
-                                placeholder="豚肉 200g&#13;&#10;玉ねぎ 1個"
-                                className="w-full p-2 bg-white border border-gray-200 rounded focus:border-orange-400 outline-none text-sm leading-relaxed"
+                                className="w-full bg-gray-100 border-b-4 border-black p-2 focus:border-neon-cyan outline-none transition-colors font-mono text-xs"
                             />
                         </div>
 
@@ -260,24 +274,25 @@ export const RecipeDetailModal = ({ recipe, isOpen, onClose, onUpdate }: RecipeD
                         <div className="pt-4 flex gap-3">
                             <button
                                 type="button"
-                                onClick={onClose}
-                                className="flex-1 py-3 text-gray-500 font-bold hover:bg-gray-100 rounded-md transition-colors"
+                                onClick={handleDelete}
+                                className="px-4 py-3 bg-white text-black font-black border-2 border-black hover:bg-neon-pink hover:text-white transition-colors"
+                                title="DELETE PROJECT"
                             >
-                                キャンセル
+                                <Trash2 size={20} strokeWidth={3} />
                             </button>
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="flex-1 py-3 bg-orange-500 text-white font-bold rounded-md shadow-md hover:bg-orange-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                                className="flex-1 py-3 bg-neon-yellow text-black font-black border-2 border-black shadow-brutal hover:bg-black hover:text-white hover:border-white active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all disabled:opacity-50 uppercase tracking-widest text-lg flex items-center justify-center gap-2"
                             >
-                                <Save size={18} />
-                                {loading ? '保存中...' : '保存する'}
+                                <Save size={20} strokeWidth={3} />
+                                {loading ? 'SAVING...' : 'UPDATE'}
                             </button>
                         </div>
                     </form>
                 </motion.div>
             </div>
-        </AnimatePresence >,
+        </AnimatePresence>,
         document.body
     );
 };

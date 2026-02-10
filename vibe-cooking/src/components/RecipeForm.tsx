@@ -26,6 +26,7 @@ export const RecipeForm = ({ onRecipeAdded, isOpen, onOpenChange, initialUrl = '
     const [workDuration, setWorkDuration] = useState(0);
     const [loading, setLoading] = useState(false);
     const [fetchingData, setFetchingData] = useState(false);
+    const [isHibernating, setIsHibernating] = useState(false);
 
     // Sync state when form opens or initial props change
     useEffect(() => {
@@ -100,6 +101,7 @@ export const RecipeForm = ({ onRecipeAdded, isOpen, onOpenChange, initialUrl = '
                     memo: 'メモなし',
                     ingredients: ingredients.split('\n').filter(line => line.trim() !== ''),
                     work_duration: workDuration,
+                    is_hibernating: isHibernating,
                 },
             ]);
 
@@ -113,6 +115,7 @@ export const RecipeForm = ({ onRecipeAdded, isOpen, onOpenChange, initialUrl = '
             setCategory('main');
             setIngredients('');
             setWorkDuration(0);
+            setIsHibernating(false);
             onOpenChange(false);
             onRecipeAdded();
         }
@@ -141,6 +144,25 @@ export const RecipeForm = ({ onRecipeAdded, isOpen, onOpenChange, initialUrl = '
                                         placeholder="INPUT TITLE..."
                                         required
                                     />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-black mb-1 uppercase tracking-widest bg-black text-white inline-block px-1">STATUS</label>
+                                    <div className="flex gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsHibernating(false)}
+                                            className={`flex-1 py-2 text-xs border-2 border-black font-black uppercase tracking-wider transition-all ${!isHibernating ? 'bg-black text-white' : 'bg-white text-gray-400 hover:bg-gray-100'}`}
+                                        >
+                                            ACTIVE
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsHibernating(true)}
+                                            className={`flex-1 py-2 text-xs border-2 border-black font-black uppercase tracking-wider transition-all ${isHibernating ? 'bg-blue-600 text-white shadow-[2px_2px_0px_0px_#000]' : 'bg-white text-gray-400 hover:bg-gray-100'}`}
+                                        >
+                                            HIBERNATE 💤
+                                        </button>
+                                    </div>
                                 </div>
                                 <div>
                                     <label className="block text-xs font-black mb-1 uppercase tracking-widest bg-black text-white inline-block px-1">CATEGORY</label>
