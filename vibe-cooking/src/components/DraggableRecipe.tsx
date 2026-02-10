@@ -61,9 +61,7 @@ export const DraggableRecipe = ({ id, name, image_url, category, rating, has_coo
                     <div className="flex items-center gap-2">
                         <span className="text-sm font-bold font-body truncate text-black">{name}</span>
                         {/* Status Badges */}
-                        {!has_cooked && (
-                            <span className="bg-gray-200 text-black text-[8px] font-black px-1 border border-black uppercase tracking-tighter">NEW</span>
-                        )}
+
                         {is_hibernating && (
                             <span className="bg-blue-200 text-blue-900 text-[8px] font-black px-1 border border-blue-900 uppercase tracking-tighter">ZZZ</span>
                         )}
@@ -98,6 +96,14 @@ export const DraggableRecipe = ({ id, name, image_url, category, rating, has_coo
                     </button>
                 )}
             </div>
+            {/* NEW Ribbon Badge */}
+            {!has_cooked && (
+                <div className="absolute top-0 right-0 w-12 h-12 overflow-hidden pointer-events-none z-10">
+                    <div className="absolute top-[6px] -right-[16px] rotate-45 bg-neon-pink text-white text-[8px] font-black py-[2px] w-24 text-center border-y-2 border-black shadow-sm tracking-widest transform translate-x-1 translate-y-[-1px]">
+                        NEW
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
