@@ -1,8 +1,9 @@
 import { useDroppable } from '@dnd-kit/core';
 import { format, isSaturday, isFriday } from 'date-fns';
 import { ja } from 'date-fns/locale';
-import { Briefcase, Home, Gift } from 'lucide-react';
+import { Briefcase, Home } from 'lucide-react';
 import { DraggableRecipe } from './DraggableRecipe';
+import { GachaButton } from './GachaButton';
 
 interface Recipe {
     id: string;
@@ -56,8 +57,13 @@ export const DayColumn = ({ date, dayType, plans, onToggleDayType, onDeletePlan,
             </div>
 
             {/* Header */}
-            <div className={`flex justify-between items-center p-3 border-b-4 border-black z-10 ${isWeekendParty ? 'bg-neon-yellow' : 'bg-black'}`}>
-                <div className="flex flex-col">
+            <div className={`relative flex justify-between items-center p-3 border-b-4 border-black z-10 ${isWeekendParty ? 'bg-neon-yellow' : 'bg-black'} overflow-hidden`}>
+                {/* Layered Typography: Bold English Day behind Japanese */}
+                <span className={`absolute -bottom-4 -left-2 text-6xl font-black font-director italic tracking-tighter opacity-20 select-none pointer-events-none ${isWeekendParty ? 'text-black' : 'text-white'}`}>
+                    {format(date, 'EEE').toUpperCase()}
+                </span>
+
+                <div className="flex flex-col relative z-20">
                     <span className={`text-4xl font-black font-director leading-none tracking-tighter ${isWeekendParty ? 'text-black' : 'text-neon-yellow'}`}>
                         {dayStr}
                     </span>
@@ -91,13 +97,9 @@ export const DayColumn = ({ date, dayType, plans, onToggleDayType, onDeletePlan,
                     <div className="flex justify-between items-start w-full">
                         {soup && <DraggableRecipe id={`plan-${soup.id}`} name={soup.recipe.name} onDelete={() => onDeletePlan(soup.id)} />}
                         {!soup && (
-                            <button
-                                onClick={onSoupGacha}
-                                className="w-full h-full min-h-[40px] flex items-center justify-center border-2 border-dashed border-gray-300 text-gray-400 hover:border-neon-pink hover:text-neon-pink transition-colors font-bold tracking-widest text-xs"
-                                title="GACHA"
-                            >
-                                <Gift size={18} className="mr-2" /> GACHA
-                            </button>
+                            <div className="w-full h-full min-h-[40px]">
+                                <GachaButton onClick={onSoupGacha} />
+                            </div>
                         )}
                     </div>
                 </DroppableSlot>

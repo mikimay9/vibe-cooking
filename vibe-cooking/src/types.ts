@@ -9,6 +9,9 @@ export interface Recipe {
     ingredients?: string[];
     work_duration?: number; // minutes
     arrangements?: { date: string; text: string }[];
+    rating?: 1 | 2 | 3;
+    has_cooked?: boolean;
+    is_hibernating?: boolean;
 }
 
 export interface WeeklyPlanItem {

@@ -405,6 +405,9 @@ function App() {
                       id={`recipe-${recipe.id}`}
                       name={recipe.name}
                       category={recipe.category}
+                      rating={recipe.rating}
+                      has_cooked={recipe.has_cooked}
+                      is_hibernating={recipe.is_hibernating}
                       onEdit={() => setEditingRecipe(recipe)}
                     />
                   ))}
