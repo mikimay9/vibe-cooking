@@ -451,7 +451,7 @@ function App() {
         {/* Main: Weekly Board (Always visible on mobile now to allow drop, sitting behind sidebar) */}
         <main className="flex-1 flex flex-col relative w-full overflow-hidden bg-white">
           <div className="p-4 flex justify-between items-center bg-neon-yellow border-b-4 border-black">
-            <h1 className="text-3xl font-black italic tracking-tighter text-black uppercase transform -skew-x-12">WEEKLY PROJECT 🎨</h1>
+            <h1 className="text-3xl font-black italic tracking-tighter text-black uppercase transform -skew-x-12">WEEKLY PROJECT</h1>
             <div className="flex gap-2">
               <button onClick={() => setStartDate(d => addDays(d, -7))} className="px-3 py-1 border-2 border-black bg-white hover:bg-black hover:text-white font-bold transition-all shadow-brutal active:translate-x-[2px] active:translate-y-[2px] active:shadow-none">PREV</button>
               <button onClick={() => setStartDate(d => addDays(d, 7))} className="px-3 py-1 border-2 border-black bg-white hover:bg-black hover:text-white font-bold transition-all shadow-brutal active:translate-x-[2px] active:translate-y-[2px] active:shadow-none">NEXT</button>

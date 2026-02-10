@@ -1,6 +1,6 @@
 
 import { useState, useRef } from 'react';
-import { Upload, Camera, Loader2, ChefHat, Sparkles, X } from 'lucide-react';
+import { Upload, Camera, Loader2, ChefHat, Sparkles, X, ShoppingCart } from 'lucide-react';
 import type { Recipe } from '../types';
 
 interface FlyerAnalysisViewProps {
@@ -211,7 +211,7 @@ export const FlyerAnalysisView = ({ onAddRecipe, existingRecipes }: FlyerAnalysi
                     {/* Bargain Items */}
                     <div className="bg-black p-4 border-2 border-black shadow-brutal">
                         <h3 className="font-black text-neon-yellow mb-4 flex items-center gap-2 text-sm uppercase tracking-widest">
-                            <span className="text-lg">🛒</span> BARGAIN DETECTED
+                            <ShoppingCart size={20} strokeWidth={3} /> BARGAIN DETECTED
                         </h3>
                         <div className="flex flex-wrap gap-2">
                             {result.bargains.map((item, idx) => (

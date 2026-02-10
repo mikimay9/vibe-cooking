@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ExternalLink, Plus, RefreshCw, Loader } from 'lucide-react';
+import { ExternalLink, Plus, Loader2, Siren, WifiOff, RefreshCw } from 'lucide-react';
 
 interface PatrolRecipe {
     id: string;
@@ -95,7 +95,9 @@ export const PatrolView = ({ onAddRecipe }: PatrolViewProps) => {
         <div className="h-full overflow-y-auto p-4 scrollbar-hide">
             <div className="flex justify-between items-center mb-6">
                 <div>
-                    <h2 className="text-2xl font-bold text-ink font-hand">SNSパトロール 👮‍♀️</h2>
+                    <h2 className="text-2xl font-black italic tracking-tighter text-black uppercase transform -skew-x-12 border-b-4 border-neon-cyan pb-2 w-max">
+                        <Siren size={28} strokeWidth={3} className="mr-2 inline-block" /> SNS PATROL
+                    </h2>
                     <p className="text-sm text-gray-500 font-hand">人気シェフの最新レシピをチェック！</p>
                 </div>
                 <button
@@ -115,7 +117,7 @@ export const PatrolView = ({ onAddRecipe }: PatrolViewProps) => {
 
             {loading && recipes.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 text-gray-400">
-                    <Loader className="animate-spin mb-2" size={32} />
+                    {loading ? <Loader2 className="animate-spin" size={20} /> : <RefreshCw size={20} />}
                     <span className="font-hand">パトロール中...</span>
                 </div>
             ) : (
@@ -183,7 +185,7 @@ export const PatrolView = ({ onAddRecipe }: PatrolViewProps) => {
 
             {!loading && recipes.length === 0 && !error && (
                 <div className="text-center py-12 text-gray-400 font-hand">
-                    まだレシピが見つかりません... 😴
+                    NO RECIPES DETECTED... <WifiOff size={20} className="inline ml-1" />
                 </div>
             )}
         </div>
