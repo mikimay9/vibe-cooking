@@ -124,102 +124,95 @@ export const RecipeForm = ({ onRecipeAdded, isOpen, onOpenChange, initialUrl = '
                 <AnimatePresence>
                     {isOpen && (
                         <motion.div
-                            initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.8, y: 20 }}
-                            className="fixed bottom-24 right-6 z-[100] mb-4 bg-white p-6 rounded-sm shadow-xl border border-gray-200 w-80 font-hand"
-                            style={{
-                                backgroundImage: 'radial-gradient(#d1d5db 1px, transparent 1px)',
-                                backgroundSize: '24px 24px'
-                            }}
+                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            className="fixed bottom-24 right-6 z-[100] mb-4 bg-white p-6 rounded-none shadow-brutal border-4 border-black w-80 font-body"
                         >
-                            <h3 className="text-xl font-bold mb-4 text-ink border-b-2 border-gray-200 pb-1">レシピを追加</h3>
-                            <form onSubmit={handleSubmit} className="space-y-4">
+                            <h3 className="text-3xl font-black italic tracking-tighter mb-6 text-black border-b-4 border-black pb-2 uppercase transform -skew-x-12">NEW PROJECT</h3>
+                            <form onSubmit={handleSubmit} className="space-y-5">
                                 <div>
-                                    <label className="block text-sm font-bold mb-1">レシピ名</label>
+                                    <label className="block text-xs font-black mb-1 uppercase tracking-widest bg-black text-white inline-block px-1">PROJECT NAME</label>
                                     <input
                                         type="text"
                                         value={title}
                                         onChange={(e) => setTitle(e.target.value)}
-                                        className="w-full bg-transparent border-b-2 border-gray-300 focus:border-blue-400 outline-none transition-colors"
-                                        placeholder="例：至高のカレー"
+                                        className="w-full bg-gray-100 border-2 border-black p-2 focus:bg-neon-yellow/20 focus:border-neon-pink outline-none transition-colors font-bold"
+                                        placeholder="INPUT TITLE..."
                                         required
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-bold mb-1">カテゴリー</label>
+                                    <label className="block text-xs font-black mb-1 uppercase tracking-widest bg-black text-white inline-block px-1">CATEGORY</label>
                                     <div className="flex gap-2">
                                         <button
                                             type="button"
                                             onClick={() => setCategory('main')}
-                                            className={`flex-1 py-1 text-xs border rounded-sm ${category === 'main' ? 'bg-red-100 border-red-400 text-red-700 font-bold' : 'bg-white border-gray-300 text-gray-500'}`}
+                                            className={`flex-1 py-2 text-xs border-2 border-black font-black uppercase tracking-wider transition-all ${category === 'main' ? 'bg-red-500 text-white shadow-[2px_2px_0px_0px_#000]' : 'bg-white text-gray-400 hover:bg-gray-100'}`}
                                         >
-                                            主菜
+                                            MAIN
                                         </button>
                                         <button
                                             type="button"
                                             onClick={() => setCategory('side')}
-                                            className={`flex-1 py-1 text-xs border rounded-sm ${category === 'side' ? 'bg-green-100 border-green-400 text-green-700 font-bold' : 'bg-white border-gray-300 text-gray-500'}`}
+                                            className={`flex-1 py-2 text-xs border-2 border-black font-black uppercase tracking-wider transition-all ${category === 'side' ? 'bg-green-500 text-black shadow-[2px_2px_0px_0px_#000]' : 'bg-white text-gray-400 hover:bg-gray-100'}`}
                                         >
-                                            副菜
+                                            SIDE
                                         </button>
                                         <button
                                             type="button"
                                             onClick={() => setCategory('soup')}
-                                            className={`flex-1 py-1 text-xs border rounded-sm ${category === 'soup' ? 'bg-yellow-100 border-yellow-400 text-yellow-700 font-bold' : 'bg-white border-gray-300 text-gray-500'}`}
+                                            className={`flex-1 py-2 text-xs border-2 border-black font-black uppercase tracking-wider transition-all ${category === 'soup' ? 'bg-yellow-400 text-black shadow-[2px_2px_0px_0px_#000]' : 'bg-white text-gray-400 hover:bg-gray-100'}`}
                                         >
-                                            汁物
+                                            SOUP
                                         </button>
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-bold mb-1">URL</label>
+                                    <label className="block text-xs font-black mb-1 uppercase tracking-widest bg-black text-white inline-block px-1">SOURCE URL</label>
                                     <div className="relative">
                                         <input
                                             type="url"
                                             value={url}
                                             onChange={(e) => setUrl(e.target.value)}
                                             onBlur={handleUrlBlur}
-                                            className="w-full bg-transparent border-b-2 border-gray-300 focus:border-blue-400 outline-none transition-colors pr-8"
+                                            className="w-full bg-gray-100 border-b-4 border-black p-2 focus:border-neon-cyan outline-none transition-colors pr-8 font-mono text-xs"
                                             placeholder="https://..."
                                         />
                                         {fetchingData && (
-                                            <div className="absolute right-0 top-0 bottom-0 flex items-center">
-                                                <div className="animate-spin h-4 w-4 border-2 border-blue-500 rounded-full border-t-transparent"></div>
+                                            <div className="absolute right-2 top-2">
+                                                <div className="animate-spin h-4 w-4 border-2 border-black rounded-full border-t-transparent"></div>
                                             </div>
                                         )}
                                     </div>
-                                    <p className="text-[10px] text-gray-400 mt-1">
-                                        URLを入力するとタイトル・材料・手順を自動取得します
-                                    </p>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-sm font-bold mb-1">材料 <span className="text-xs font-normal text-gray-400">(1行ずつ)</span></label>
+                                        <label className="block text-xs font-black mb-1 uppercase tracking-widest bg-black text-white inline-block px-1">MATERIALS</label>
                                         <textarea
                                             value={ingredients}
                                             onChange={(e) => setIngredients(e.target.value)}
-                                            className="w-full h-32 bg-transparent border-2 border-gray-200 rounded p-2 focus:border-blue-400 outline-none transition-colors text-sm"
-                                            placeholder="豚肉 200g&#13;&#10;玉ねぎ 1個"
+                                            className="w-full h-32 bg-gray-50 border-2 border-black p-2 focus:bg-white outline-none transition-colors text-xs font-mono resize-none"
+                                            placeholder="LIST HERE..."
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-bold mb-1">調理時間 <span className="text-xs font-normal text-gray-400">(分)</span></label>
+                                        <label className="block text-xs font-black mb-1 uppercase tracking-widest bg-black text-white inline-block px-1">TIME (MIN)</label>
                                         <input
                                             type="number"
                                             value={workDuration}
                                             onChange={(e) => setWorkDuration(Number(e.target.value))}
-                                            className="w-full h-12 bg-transparent border-2 border-gray-200 rounded p-2 focus:border-blue-400 outline-none transition-colors text-sm"
-                                            placeholder="15"
+                                            className="w-full h-12 bg-gray-50 border-2 border-black p-2 focus:bg-white outline-none transition-colors text-lg font-black text-center"
+                                            placeholder="0"
                                         />
                                     </div>
                                 </div>
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className="w-full bg-blue-500 text-white font-bold py-2 rounded-sm shadow-sm hover:bg-blue-600 transition-colors disabled:opacity-50"
+                                    className="w-full bg-black text-white font-black py-3 border-2 border-black shadow-brutal hover:bg-neon-pink hover:text-white hover:border-black active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-widest text-lg"
                                 >
-                                    {loading ? '保存中...' : '本棚に追加'}
+                                    {loading ? 'SAVING...' : 'EXECUTE'}
                                 </button>
                             </form>
                         </motion.div>
@@ -229,12 +222,12 @@ export const RecipeForm = ({ onRecipeAdded, isOpen, onOpenChange, initialUrl = '
             )}
 
             <motion.button
-                whileHover={{ scale: 1.1 }}
+                whileHover={{ scale: 1.1, rotate: 90 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={() => onOpenChange(!isOpen)}
-                className="bg-yellow-400 text-ink p-4 rounded-full shadow-lg border-2 border-white"
+                className={`p-4 rounded-full shadow-brutal border-2 border-black transition-colors ${isOpen ? 'bg-white text-black' : 'bg-neon-pink text-white'}`}
             >
-                {isOpen ? <X size={24} /> : <Plus size={24} />}
+                {isOpen ? <X size={24} strokeWidth={3} /> : <Plus size={24} strokeWidth={3} />}
             </motion.button>
         </div>
     );

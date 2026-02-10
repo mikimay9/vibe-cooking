@@ -141,22 +141,22 @@ export const FlyerAnalysisView = ({ onAddRecipe, existingRecipes }: FlyerAnalysi
     };
 
     return (
-        <div className="h-full flex flex-col p-4 bg-white/50 overflow-y-auto">
-            <h2 className="text-xl font-bold text-orange-800 mb-4 flex items-center gap-2">
-                <Camera size={24} /> チラシ分析
+        <div className="h-full flex flex-col p-4 bg-white overflow-y-auto">
+            <h2 className="text-2xl font-black italic tracking-tighter text-black mb-6 flex items-center gap-2 uppercase transform -skew-x-12 border-b-4 border-neon-pink pb-2 w-max">
+                <Camera size={28} strokeWidth={3} /> FLYER SCANNER
             </h2>
 
             {/* Image Upload Area */}
             {images.length < 2 && (
                 <div
-                    className="border-2 border-dashed border-gray-300 rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer hover:border-orange-300 hover:bg-orange-50 transition-colors mb-4"
+                    className="border-4 border-dashed border-black bg-gray-100 p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-neon-yellow/20 hover:border-black transition-colors mb-4 group"
                     onClick={() => fileInputRef.current?.click()}
                 >
-                    <Upload className="text-gray-400 mb-2" size={32} />
-                    <p className="text-sm text-gray-500 font-bold">チラシ画像をアップロード</p>
-                    <p className="text-xs text-gray-400 mt-1">
-                        最大2枚まで（表・裏など）<br />
-                        タップして選択または撮影
+                    <Upload className="text-black mb-2 group-hover:scale-110 transition-transform" size={40} strokeWidth={3} />
+                    <p className="text-sm text-black font-black uppercase tracking-widest">UPLOAD FLYER</p>
+                    <p className="text-[10px] text-gray-500 mt-1 font-mono">
+                        MAX 2 IMAGES (FRONT/BACK)<br />
+                        TAP TO SELECT
                     </p>
                     <input
                         type="file"
@@ -171,15 +171,15 @@ export const FlyerAnalysisView = ({ onAddRecipe, existingRecipes }: FlyerAnalysi
 
             {/* Image Previews */}
             {images.length > 0 && (
-                <div className="grid grid-cols-2 gap-2 mb-4">
+                <div className="grid grid-cols-2 gap-4 mb-4">
                     {images.map((img, idx) => (
-                        <div key={idx} className="relative aspect-[3/4] rounded-lg overflow-hidden border border-gray-200 shadow-sm bg-white">
-                            <img src={img} alt={`Flyer ${idx + 1}`} className="w-full h-full object-contain" />
+                        <div key={idx} className="relative aspect-[3/4] border-2 border-black shadow-brutal bg-white p-1">
+                            <img src={img} alt={`Flyer ${idx + 1}`} className="w-full h-full object-contain bg-gray-50" />
                             <button
                                 onClick={() => removeImage(idx)}
-                                className="absolute top-1 right-1 bg-black/50 text-white rounded-full p-1 hover:bg-black/70 transition-colors"
+                                className="absolute -top-2 -right-2 bg-neon-pink text-white border-2 border-black w-6 h-6 flex items-center justify-center hover:bg-black transition-colors"
                             >
-                                <X size={14} />
+                                <X size={14} strokeWidth={3} />
                             </button>
                         </div>
                     ))}
@@ -190,17 +190,17 @@ export const FlyerAnalysisView = ({ onAddRecipe, existingRecipes }: FlyerAnalysi
             {images.length > 0 && !analyzing && !result && (
                 <button
                     onClick={handleAnalyze}
-                    className="mt-2 w-full bg-gradient-to-r from-orange-500 to-pink-500 text-white font-bold py-3 rounded-xl shadow-md flex items-center justify-center gap-2 transform active:scale-95 transition-all"
+                    className="mt-2 w-full bg-neon-yellow text-black border-2 border-black font-black py-4 shadow-brutal flex items-center justify-center gap-2 transform active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all uppercase text-lg tracking-widest hover:bg-white"
                 >
-                    <Sparkles size={20} /> AIで特売レシピを診断
+                    <Sparkles size={24} strokeWidth={3} /> START ANALYSIS
                 </button>
             )}
 
             {analyzing && (
-                <div className="mt-8 flex flex-col items-center text-orange-600 animate-pulse">
-                    <Loader2 size={40} className="animate-spin mb-2" />
-                    <p className="font-bold">チラシを読み込んでいます...</p>
-                    <p className="text-xs text-orange-400">特売品から献立を考えています🍳</p>
+                <div className="mt-8 flex flex-col items-center text-black animate-pulse">
+                    <Loader2 size={40} className="animate-spin mb-4" strokeWidth={3} />
+                    <p className="font-black text-xl uppercase italic">ANALYZING...</p>
+                    <p className="text-xs text-gray-500 font-mono mt-2">DETECTING BARGAINS & RECIPES</p>
                 </div>
             )}
 
@@ -209,13 +209,13 @@ export const FlyerAnalysisView = ({ onAddRecipe, existingRecipes }: FlyerAnalysi
                 <div className="mt-6 space-y-6 animate-in slide-in-from-bottom duration-500">
 
                     {/* Bargain Items */}
-                    <div className="bg-white p-4 rounded-lg shadow-sm border border-orange-100">
-                        <h3 className="font-bold text-orange-800 mb-2 flex items-center gap-2 text-sm">
-                            <span className="text-lg">🛒</span> 今日の特売・旬食材
+                    <div className="bg-black p-4 border-2 border-black shadow-brutal">
+                        <h3 className="font-black text-neon-yellow mb-4 flex items-center gap-2 text-sm uppercase tracking-widest">
+                            <span className="text-lg">🛒</span> BARGAIN DETECTED
                         </h3>
                         <div className="flex flex-wrap gap-2">
                             {result.bargains.map((item, idx) => (
-                                <span key={idx} className="bg-orange-100 text-orange-800 px-2 py-1 rounded-md text-xs font-bold">
+                                <span key={idx} className="bg-white text-black border border-black px-2 py-1 text-xs font-bold shadow-[2px_2px_0px_0px_#FFF]">
                                     {item}
                                 </span>
                             ))}
@@ -223,25 +223,25 @@ export const FlyerAnalysisView = ({ onAddRecipe, existingRecipes }: FlyerAnalysi
                     </div>
 
                     {/* Recipe Suggestions */}
-                    <div className="space-y-3">
-                        <h3 className="font-bold text-ink mb-1 flex items-center gap-2 text-sm">
-                            <ChefHat size={16} /> おすすめ献立
+                    <div className="space-y-4">
+                        <h3 className="font-black text-black mb-1 flex items-center gap-2 text-sm uppercase tracking-widest border-b-2 border-black pb-1 w-max">
+                            <ChefHat size={18} strokeWidth={3} /> SUGGESTED MENU
                         </h3>
 
                         {result.recipes.map((recipe, idx) => (
-                            <div key={idx} className={`p-4 rounded-lg shadow-sm border relative ${recipe.is_new ? 'bg-yellow-50 border-yellow-200' : 'bg-white border-gray-100'}`}>
+                            <div key={idx} className={`p-4 border-2 border-black shadow-brutal relative ${recipe.is_new ? 'bg-neon-yellow/10' : 'bg-white'}`}>
                                 {recipe.is_new && (
-                                    <span className="absolute -top-2 -right-2 bg-yellow-400 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm animate-bounce">
+                                    <span className="absolute -top-3 -right-2 bg-neon-pink text-white text-[10px] font-black px-2 py-1 border-2 border-black shadow-sm transform rotate-3">
                                         NEW IDEA!
                                     </span>
                                 )}
-                                <h4 className="font-bold text-lg text-ink mb-1">{recipe.name}</h4>
-                                <p className="text-xs text-gray-500 mb-3">{recipe.reason}</p>
+                                <h4 className="font-black text-lg text-black mb-2 uppercase">{recipe.name}</h4>
+                                <p className="text-xs text-gray-600 mb-4 font-mono leading-relaxed">{recipe.reason}</p>
                                 <button
                                     onClick={() => onAddRecipe({ name: recipe.name, category: 'main' })} // Default to main for now
-                                    className="w-full bg-white border border-gray-200 hover:bg-gray-50 text-gray-600 text-xs font-bold py-2 rounded-md transition-colors flex items-center justify-center gap-1"
+                                    className="w-full bg-white border-2 border-black hover:bg-black hover:text-white text-black text-xs font-black py-3 transition-colors flex items-center justify-center gap-2 uppercase tracking-wider"
                                 >
-                                    ＋ 本棚に追加
+                                    ＋ ADD TO STOCK
                                 </button>
                             </div>
                         ))}
@@ -249,9 +249,9 @@ export const FlyerAnalysisView = ({ onAddRecipe, existingRecipes }: FlyerAnalysi
 
                     <button
                         onClick={() => { setImages([]); setResult(null); }}
-                        className="w-full text-gray-400 text-xs text-center hover:text-gray-600 underline"
+                        className="w-full text-gray-400 text-xs text-center hover:text-black underline uppercase font-bold mt-8"
                     >
-                        他のチラシを読み込む
+                        SCAN ANOTHER FLYER
                     </button>
                 </div>
             )}

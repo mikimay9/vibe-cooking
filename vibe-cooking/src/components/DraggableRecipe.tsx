@@ -21,15 +21,7 @@ export const DraggableRecipe = ({ id, name, image_url, category, onDelete, onEdi
         transform: CSS.Translate.toString(transform),
     };
 
-    // ... getCategoryStyle ...
-    const getCategoryStyle = () => {
-        switch (category) {
-            case 'main': return 'border-l-4 border-l-red-400 bg-red-50/50';
-            case 'side': return 'border-l-4 border-l-green-400 bg-green-50/50';
-            case 'soup': return 'border-l-4 border-l-yellow-400 bg-yellow-50/50';
-            default: return 'border-l-4 border-gray-200';
-        }
-    };
+
 
     // Work Mode Logic: Quick recipes
     const isQuick = (name.includes('虚無') || name.includes('レンジ') || name.includes('爆速') || name.includes('早') || name.includes('一撃'));
@@ -40,35 +32,35 @@ export const DraggableRecipe = ({ id, name, image_url, category, onDelete, onEdi
             style={style}
             {...listeners}
             {...attributes}
-            className={`group relative p-3 rounded-sm shadow-sm border border-gray-200 mb-2 cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow select-none ${getCategoryStyle()}`}
+            className={`group relative p-3 rounded-none bg-white border-2 border-black mb-2 cursor-grab active:cursor-grabbing hover:shadow-brutal hover:-translate-y-[2px] hover:-translate-x-[2px] transition-all select-none w-full`}
         >
-            <div className="flex items-center gap-2">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 relative
-                    ${category === 'main' ? 'bg-red-100 text-red-600' : ''}
-                    ${category === 'side' ? 'bg-green-100 text-green-600' : ''}
-                    ${category === 'soup' ? 'bg-yellow-100 text-yellow-600' : ''}
-                    ${!category ? 'bg-gray-100 text-gray-600' : ''}
+            <div className="flex items-center gap-3">
+                <div className={`w-6 h-6 flex items-center justify-center text-[10px] font-black border-2 border-black flex-shrink-0 relative shadow-[2px_2px_0px_0px_#000]
+                    ${category === 'main' ? 'bg-red-500 text-white' : ''}
+                    ${category === 'side' ? 'bg-green-500 text-black' : ''}
+                    ${category === 'soup' ? 'bg-yellow-400 text-black' : ''}
+                    ${!category ? 'bg-gray-200 text-black' : ''}
                 `}>
                     {name.slice(0, 1)}
                     {isQuick && (
-                        <div className="absolute -top-1 -right-1 bg-yellow-400 text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] shadow-sm border border-white animate-pulse">
+                        <div className="absolute -top-2 -right-2 bg-neon-yellow text-black border-2 border-black w-5 h-5 flex items-center justify-center text-[10px] shadow-sm animate-pulse z-10">
                             ⚡
                         </div>
                     )}
                 </div>
-                <span className="text-sm font-hand truncate flex-1">{name}</span>
+                <span className="text-sm font-bold font-body truncate flex-1 text-black">{name}</span>
             </div>
 
             {/* Action Buttons */}
-            <div className="absolute -top-2 -right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="absolute -top-2 -right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-20">
                 {onEdit && (
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
-                            onEdit();
+                            onEdit?.();
                         }}
-                        className="bg-blue-500 text-white rounded-full w-5 h-5 flex items-center justify-center shadow-sm hover:bg-blue-600"
-                        title="編集"
+                        className="bg-neon-cyan text-black border-2 border-black w-6 h-6 flex items-center justify-center hover:bg-white transition-colors"
+                        title="EDIT"
                     >
                         ✎
                     </button>
@@ -77,10 +69,10 @@ export const DraggableRecipe = ({ id, name, image_url, category, onDelete, onEdi
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
-                            onDelete();
+                            onDelete?.();
                         }}
-                        className="bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center shadow-sm hover:bg-red-600"
-                        title="削除"
+                        className="bg-neon-pink text-white border-2 border-black w-6 h-6 flex items-center justify-center hover:bg-white hover:text-black transition-colors"
+                        title="DELETE"
                     >
                         ×
                     </button>

@@ -1,7 +1,7 @@
 import { useDroppable } from '@dnd-kit/core';
 import { format, isSaturday, isFriday } from 'date-fns';
 import { ja } from 'date-fns/locale';
-import { Briefcase, Home, Gift, Beer } from 'lucide-react';
+import { Briefcase, Home, Gift } from 'lucide-react';
 import { DraggableRecipe } from './DraggableRecipe';
 
 interface Recipe {
@@ -28,8 +28,8 @@ const DroppableSlot = ({ id, label, children, isOver }: { id: string, label: str
     const { setNodeRef } = useDroppable({ id });
 
     return (
-        <div ref={setNodeRef} className={`p-2 rounded-sm border-2 border-dashed transition-colors min-h-[60px] ${isOver ? 'border-blue-400 bg-blue-50' : 'border-gray-200 bg-white/50'}`}>
-            <div className="text-xs text-gray-400 mb-1">{label}</div>
+        <div ref={setNodeRef} className={`p-2 rounded-none border-2 border-dashed transition-colors min-h-[60px] ${isOver ? 'border-neon-cyan bg-cyan-50' : 'border-gray-300 bg-white/80'}`}>
+            <div className="text-[10px] font-black text-gray-400 mb-1 uppercase tracking-widest">{label}</div>
             {children}
         </div>
     );
@@ -45,56 +45,63 @@ export const DayColumn = ({ date, dayType, plans, onToggleDayType, onDeletePlan,
     const sides = plans.filter(p => p.slot_type === 'side');
     const soup = plans.find(p => p.slot_type === 'soup');
 
+    const isWorkDay = dayType === 'work';
+
     return (
-        <div className={`flex-shrink-0 w-64 p-4 rounded-md border-2 relative flex flex-col gap-3 transition-colors
-      ${isWeekendParty ? 'border-yellow-400 bg-yellow-50' : 'border-gray-300 bg-white'}
-    `}>
+        <div className={`flex-shrink-0 w-72 min-h-[500px] p-0 relative flex flex-col transition-colors border-4 border-black bg-white overflow-hidden group`}>
+
+            {/* Huge Watermark */}
+            <div className="absolute top-20 -right-4 font-director font-black text-9xl text-gray-100/50 -rotate-12 select-none pointer-events-none z-0 transform transition-transform group-hover:scale-110 duration-500">
+                {format(date, 'EEE').toUpperCase()}
+            </div>
+
             {/* Header */}
-            <div className="flex justify-between items-center mb-1">
-                <div className="flex items-baseline gap-1">
-                    <span className={`text-2xl font-bold font-hand ${isWeekendParty ? 'text-orange-600' : 'text-ink'}`}>
+            <div className={`flex justify-between items-center p-3 border-b-4 border-black z-10 ${isWeekendParty ? 'bg-neon-yellow' : 'bg-black'}`}>
+                <div className="flex flex-col">
+                    <span className={`text-4xl font-black font-director leading-none tracking-tighter ${isWeekendParty ? 'text-black' : 'text-neon-yellow'}`}>
                         {dayStr}
                     </span>
-                    <span className="text-sm text-gray-500">{format(date, 'M/d')}</span>
-                    {isWeekendParty && <Beer size={16} className="text-yellow-600 animate-bounce" />}
+                    <span className={`text-xs font-bold tracking-widest ${isWeekendParty ? 'text-black' : 'text-gray-400'}`}>{format(date, 'MM.dd')}</span>
                 </div>
 
                 <button
                     onClick={onToggleDayType}
-                    className={`p-1 rounded-full border ${dayType === 'work' ? 'bg-gray-100 text-gray-500 border-gray-300' : 'bg-green-100 text-green-600 border-green-300'}`}
+                    className={`p-2 border-2 border-black shadow-[2px_2px_0px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all ${isWorkDay ? 'bg-white text-black' : 'bg-neon-pink text-white'}`}
                 >
-                    {dayType === 'work' ? <Briefcase size={16} /> : <Home size={16} />}
+                    {isWorkDay ? <Briefcase size={16} strokeWidth={3} /> : <Home size={16} strokeWidth={3} />}
                 </button>
             </div>
 
-            {/* Slots */}
-            <DroppableSlot id={`${dateKey}-main`} label="主菜" isOver={false}>
-                {main && <DraggableRecipe id={`plan-${main.id}`} name={main.recipe.name} onDelete={() => onDeletePlan(main.id)} />}
-            </DroppableSlot>
-
-            <div className="space-y-2">
-                <DroppableSlot id={`${dateKey}-side-1`} label="副菜" isOver={false}>
-                    {sides[0] && <DraggableRecipe id={`plan-${sides[0].id}`} name={sides[0].recipe.name} onDelete={() => onDeletePlan(sides[0].id)} />}
+            {/* Slots Container */}
+            <div className="p-4 flex flex-col gap-3 z-10 flex-1">
+                <DroppableSlot id={`${dateKey}-main`} label="MAIN PROJECT" isOver={false}>
+                    {main && <DraggableRecipe id={`plan-${main.id}`} name={main.recipe.name} onDelete={() => onDeletePlan(main.id)} />}
                 </DroppableSlot>
-                <DroppableSlot id={`${dateKey}-side-2`} label="副菜" isOver={false}>
-                    {sides[1] && <DraggableRecipe id={`plan-${sides[1].id}`} name={sides[1].recipe.name} onDelete={() => onDeletePlan(sides[1].id)} />}
+
+                <div className="space-y-3">
+                    <DroppableSlot id={`${dateKey}-side-1`} label="SIDE TASK 01" isOver={false}>
+                        {sides[0] && <DraggableRecipe id={`plan-${sides[0].id}`} name={sides[0].recipe.name} onDelete={() => onDeletePlan(sides[0].id)} />}
+                    </DroppableSlot>
+                    <DroppableSlot id={`${dateKey}-side-2`} label="SIDE TASK 02" isOver={false}>
+                        {sides[1] && <DraggableRecipe id={`plan-${sides[1].id}`} name={sides[1].recipe.name} onDelete={() => onDeletePlan(sides[1].id)} />}
+                    </DroppableSlot>
+                </div>
+
+                <DroppableSlot id={`${dateKey}-soup`} label="SOUP / OPTION" isOver={false}>
+                    <div className="flex justify-between items-start w-full">
+                        {soup && <DraggableRecipe id={`plan-${soup.id}`} name={soup.recipe.name} onDelete={() => onDeletePlan(soup.id)} />}
+                        {!soup && (
+                            <button
+                                onClick={onSoupGacha}
+                                className="w-full h-full min-h-[40px] flex items-center justify-center border-2 border-dashed border-gray-300 text-gray-400 hover:border-neon-pink hover:text-neon-pink transition-colors font-bold tracking-widest text-xs"
+                                title="GACHA"
+                            >
+                                <Gift size={18} className="mr-2" /> GACHA
+                            </button>
+                        )}
+                    </div>
                 </DroppableSlot>
             </div>
-
-            <DroppableSlot id={`${dateKey}-soup`} label="汁物" isOver={false}>
-                <div className="flex justify-between items-start">
-                    {soup && <DraggableRecipe id={`plan-${soup.id}`} name={soup.recipe.name} onDelete={() => onDeletePlan(soup.id)} />}
-                    {!soup && (
-                        <button
-                            onClick={onSoupGacha}
-                            className="text-pink-400 hover:text-pink-600 transition-colors p-1 transform hover:rotate-12"
-                            title="スープガチャを回す"
-                        >
-                            <Gift size={18} />
-                        </button>
-                    )}
-                </div>
-            </DroppableSlot>
 
         </div>
     );

@@ -1,25 +1,53 @@
 @import "tailwindcss";
 
 @theme {
-  --font-hand: "Meiryo UI", "Meiryo", system-ui, sans-serif;
-  --color-paper: #fdfbf7;
-  --color-ink: #1f2937;
+  --font-director: "Impact", "Oswald", "Inter", "Arial Black", sans-serif;
+  --font-body: "Inter", "Roboto", sans-serif;
+  --color-paper: #ffffff;
+  --color-ink: #000000;
+  --color-neon-yellow: #DFFF00;
+  --color-neon-pink: #FF00FF;
+  --color-neon-cyan: #00FFFF;
 }
 
 body {
-  font-family: var(--font-hand);
+  font-family: var(--font-body);
   color: var(--color-ink);
-  background-color: var(--color-paper);
+  background-color: #f3f4f6;
 }
 
 @layer base {
   body {
-    font-family: var(--font-hand);
+    font-family: var(--font-body);
     color: var(--color-ink);
-    background-color: var(--color-paper);
-    background-image: radial-gradient(#e5e7eb 1px, transparent 1px);
-    background-size: 24px 24px;
+    background-color: #f3f4f6;
+    background-image: none;
   }
+  
+  /* Global border reset for that thick outline look */
+  * {
+    border-color: #000000;
+  }
+}
+
+@utility font-director {
+  font-family: var(--font-director);
+}
+
+@utility bg-neon-yellow {
+  background-color: var(--color-neon-yellow);
+}
+
+@utility text-neon-pink {
+  color: var(--color-neon-pink);
+}
+
+@utility shadow-brutal {
+  box-shadow: 4px 4px 0px 0px #000000;
+}
+
+@utility border-thick {
+  border-width: 3px;
 }
 
 /* Custom Scrollbar for notebook feel */

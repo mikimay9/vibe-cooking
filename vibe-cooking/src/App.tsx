@@ -321,87 +321,87 @@ function App() {
 
   return (
     <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      <div className="flex h-screen bg-paper text-ink font-hand overflow-hidden flex-col md:flex-row">
+      <div className="flex h-screen bg-white text-ink font-body overflow-hidden flex-col md:flex-row">
         {/* Sidebar: Recipe Bookshelf (Hidden on mobile by default, shown if activeMobileTab is 'shelf') */}
         <aside className={`
-            fixed inset-0 z-40 bg-white/95 backdrop-blur-sm flex flex-col transition-opacity duration-200
-            md:relative md:w-64 md:flex md:inset-auto md:border-r md:border-gray-200 md:shadow-lg md:opacity-100 md:pointer-events-auto md:bg-white/80
+            fixed inset-0 z-40 bg-black/95 backdrop-blur-sm flex flex-col transition-opacity duration-200
+            md:relative md:w-72 md:flex md:inset-auto md:border-r-4 md:border-black md:shadow-none md:opacity-100 md:pointer-events-auto md:bg-black text-white
             ${activeMobileTab === 'shelf' ? (activeId ? 'opacity-0 pointer-events-none' : 'opacity-100') : 'hidden md:flex'}
         `}>
           <SidebarDroppable>
-            <div className="p-4 border-b border-gray-200 bg-orange-50 flex justify-between items-center">
-              <h2 className="text-xl font-bold text-orange-800">レシピ本棚</h2>
+            <div className="p-4 border-b-4 border-white/20 bg-black flex justify-between items-center">
+              <h2 className="text-2xl font-black italic tracking-tighter text-neon-yellow uppercase">Recipe Stock</h2>
               {/* Mobile Only Close Button */}
               <button
                 onClick={() => setActiveMobileTab('board')}
-                className="md:hidden p-1 bg-white rounded-full text-gray-500 shadow-sm"
+                className="md:hidden p-1 bg-white rounded-full text-black shadow-sm"
               >
                 ✖
               </button>
             </div>
 
             {/* Tabs Container */}
-            <div className="px-4 pb-2 bg-orange-50 pt-2">
-              <div className="flex gap-1 bg-white/50 p-1 rounded-md mb-2">
+            <div className="px-4 pb-4 bg-black pt-4">
+              <div className="flex gap-2 bg-white/10 p-1 mb-4 border-2 border-white/20">
                 <button
                   onClick={() => setActiveTab('my_recipes')}
-                  className={`flex-1 py-1 text-xs rounded-sm transition-colors ${activeTab === 'my_recipes' ? 'bg-orange-100 text-orange-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-100'}`}
+                  className={`flex-1 py-2 text-xs font-black uppercase tracking-wider transition-all ${activeTab === 'my_recipes' ? 'bg-neon-yellow text-black' : 'text-gray-400 hover:text-white'}`}
                 >
                   My
                 </button>
                 <button
                   onClick={() => setActiveTab('coop')}
-                  className={`flex-1 py-1 text-xs rounded-sm transition-colors ${activeTab === 'coop' ? 'bg-green-100 text-green-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-100'}`}
+                  className={`flex-1 py-2 text-xs font-black uppercase tracking-wider transition-all ${activeTab === 'coop' ? 'bg-green-400 text-black' : 'text-gray-400 hover:text-white'}`}
                 >
                   Co-op
                 </button>
                 <button
                   onClick={() => setActiveTab('buzz')}
-                  className={`flex-1 py-1 text-xs rounded-sm transition-colors ${activeTab === 'buzz' ? 'bg-purple-100 text-purple-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-100'}`}
+                  className={`flex-1 py-2 text-xs font-black uppercase tracking-wider transition-all ${activeTab === 'buzz' ? 'bg-purple-400 text-black' : 'text-gray-400 hover:text-white'}`}
                 >
                   Buzz
                 </button>
                 <button
                   onClick={() => setActiveTab('shopping')}
-                  className={`flex-1 py-1 text-xs rounded-sm transition-colors ${activeTab === 'shopping' ? 'bg-pink-100 text-pink-700 font-bold shadow-sm' : 'text-gray-500 hover:bg-gray-100'}`}
+                  className={`flex-1 py-2 text-xs font-black uppercase tracking-wider transition-all ${activeTab === 'shopping' ? 'bg-pink-500 text-white' : 'text-gray-400 hover:text-white'}`}
                 >
-                  チラシ
+                  Flyer
                 </button>
               </div>
 
               {/* Category Filter Chips (Only for My Recipes) */}
               {activeTab === 'my_recipes' && (
-                <div className="flex gap-1 overflow-x-auto pb-1 scrollbar-hide">
+                <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
                   <button
                     onClick={() => setFilterCategory('all')}
-                    className={`px-2 py-0.5 text-[10px] rounded-full border whitespace-nowrap transition-colors ${filterCategory === 'all' ? 'bg-gray-700 text-white border-gray-700' : 'bg-white border-gray-200 text-gray-500'}`}
+                    className={`px-3 py-1 text-[10px] font-bold border-2 whitespace-nowrap transition-colors ${filterCategory === 'all' ? 'bg-white text-black border-white' : 'bg-black border-white/30 text-gray-400'}`}
                   >
-                    すべて
+                    ALL
                   </button>
                   <button
                     onClick={() => setFilterCategory('main')}
-                    className={`px-2 py-0.5 text-[10px] rounded-full border whitespace-nowrap transition-colors ${filterCategory === 'main' ? 'bg-red-100 text-red-700 border-red-200 font-bold' : 'bg-white border-gray-200 text-gray-500'}`}
+                    className={`px-3 py-1 text-[10px] font-bold border-2 whitespace-nowrap transition-colors ${filterCategory === 'main' ? 'bg-red-500 text-white border-red-500' : 'bg-black border-red-900/50 text-red-900'}`}
                   >
-                    主菜
+                    MAIN
                   </button>
                   <button
                     onClick={() => setFilterCategory('side')}
-                    className={`px-2 py-0.5 text-[10px] rounded-full border whitespace-nowrap transition-colors ${filterCategory === 'side' ? 'bg-green-100 text-green-700 border-green-200 font-bold' : 'bg-white border-gray-200 text-gray-500'}`}
+                    className={`px-3 py-1 text-[10px] font-bold border-2 whitespace-nowrap transition-colors ${filterCategory === 'side' ? 'bg-green-500 text-black border-green-500' : 'bg-black border-green-900/50 text-green-900'}`}
                   >
-                    副菜
+                    SIDE
                   </button>
                   <button
                     onClick={() => setFilterCategory('soup')}
-                    className={`px-2 py-0.5 text-[10px] rounded-full border whitespace-nowrap transition-colors ${filterCategory === 'soup' ? 'bg-yellow-100 text-yellow-700 border-yellow-200 font-bold' : 'bg-white border-gray-200 text-gray-500'}`}
+                    className={`px-3 py-1 text-[10px] font-bold border-2 whitespace-nowrap transition-colors ${filterCategory === 'soup' ? 'bg-yellow-400 text-black border-yellow-400' : 'bg-black border-yellow-900/50 text-yellow-900'}`}
                   >
-                    汁物
+                    SOUP
                   </button>
                 </div>
               )}
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 space-y-2 scrollbar-thin scrollbar-thumb-gray-300 pb-24 md:pb-4">
-              {!supabase && <p className="text-xs text-red-500">DB未接続</p>}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-gray-600 pb-24 md:pb-4 bg-black">
+              {!supabase && <p className="text-xs text-red-500 font-mono">DB DISCONNECTED</p>}
 
               {activeTab === 'my_recipes' && (
                 <>
@@ -415,18 +415,19 @@ function App() {
                     />
                   ))}
                   {filteredRecipes.length === 0 && !loading && (
-                    <p className="text-center text-gray-400 text-sm mt-10">
-                      {filterCategory === 'all' ? 'レシピを追加してね' : 'このカテゴリのレシピはありません'}
-                    </p>
+                    <div className="text-center mt-10 p-8 border-4 border-dashed border-gray-800">
+                      <p className="text-gray-600 font-black uppercase text-xl">NO DATA</p>
+                      <p className="text-gray-700 text-xs mt-2">ADD NEW PROJECT</p>
+                    </div>
                   )}
                 </>
               )}
 
               {activeTab === 'coop' && (
-                <div className="text-center text-gray-400 text-sm mt-10 p-4 border-2 border-dashed border-gray-200 rounded-md">
-                  <p className="mb-2">🚚</p>
-                  <p>コープデリ連携機能</p>
-                  <p className="text-xs mt-1">購入履歴から自動で食材リスト・レシピを表示予定</p>
+                <div className="text-center text-gray-500 mt-10 p-8 border-4 border-dashed border-gray-800">
+                  <p className="text-4xl mb-4">🚚</p>
+                  <p className="font-bold uppercase">CO-OP SYSTEM</p>
+                  <p className="text-xs mt-2 font-mono">CONNECTION PENDING...</p>
                 </div>
               )}
 
@@ -448,7 +449,7 @@ function App() {
             </div>
 
             {activeTab === 'my_recipes' && (
-              <div className="p-4 bg-gray-50 border-t border-gray-200 pb-24 md:pb-4">
+              <div className="p-4 bg-black border-t-4 border-white/10 pb-24 md:pb-4">
                 <RecipeForm
                   onRecipeAdded={fetchRecipes}
                   isOpen={isRecipeFormOpen}
@@ -462,12 +463,12 @@ function App() {
         </aside>
 
         {/* Main: Weekly Board (Always visible on mobile now to allow drop, sitting behind sidebar) */}
-        <main className="flex-1 flex flex-col relative w-full overflow-hidden">
-          <div className="p-4 flex justify-between items-center bg-white/50 border-b border-gray-200">
-            <h1 className="text-xl md:text-2xl font-bold text-ink">週間パレット 🎨</h1>
+        <main className="flex-1 flex flex-col relative w-full overflow-hidden bg-white">
+          <div className="p-4 flex justify-between items-center bg-neon-yellow border-b-4 border-black">
+            <h1 className="text-3xl font-black italic tracking-tighter text-black uppercase transform -skew-x-12">WEEKLY PROJECT 🎨</h1>
             <div className="flex gap-2">
-              <button onClick={() => setStartDate(d => addDays(d, -7))} className="px-2 py-1 md:px-3 border rounded hover:bg-gray-100 text-xs md:text-sm">← 先週</button>
-              <button onClick={() => setStartDate(d => addDays(d, 7))} className="px-2 py-1 md:px-3 border rounded hover:bg-gray-100 text-xs md:text-sm">来週 →</button>
+              <button onClick={() => setStartDate(d => addDays(d, -7))} className="px-3 py-1 border-2 border-black bg-white hover:bg-black hover:text-white font-bold transition-all shadow-brutal active:translate-x-[2px] active:translate-y-[2px] active:shadow-none">PREV</button>
+              <button onClick={() => setStartDate(d => addDays(d, 7))} className="px-3 py-1 border-2 border-black bg-white hover:bg-black hover:text-white font-bold transition-all shadow-brutal active:translate-x-[2px] active:translate-y-[2px] active:shadow-none">NEXT</button>
             </div>
           </div>
           <WeeklyBoard
@@ -481,20 +482,18 @@ function App() {
         </main>
 
         {/* Mobile Bottom Navigation */}
-        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around p-2 z-50 safe-area-bottom shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
+        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-black border-t-4 border-neon-yellow flex justify-around p-2 z-50 safe-area-bottom">
           <button
             onClick={() => setActiveMobileTab('board')}
-            className={`flex flex-col items-center p-2 rounded-lg flex-1 ${activeMobileTab === 'board' ? 'text-orange-600 bg-orange-50' : 'text-gray-400'}`}
+            className={`flex flex-col items-center p-2 rounded-none flex-1 ${activeMobileTab === 'board' ? 'text-neon-yellow bg-white/10' : 'text-gray-500'}`}
           >
-            <span className="text-2xl">📅</span>
-            <span className="text-[10px] font-bold mt-1">献立パレット</span>
+            <span className="text-xl font-black">BOARD</span>
           </button>
           <button
             onClick={() => setActiveMobileTab('shelf')}
-            className={`flex flex-col items-center p-2 rounded-lg flex-1 ${activeMobileTab === 'shelf' ? 'text-orange-600 bg-orange-50' : 'text-gray-400'}`}
+            className={`flex flex-col items-center p-2 rounded-none flex-1 ${activeMobileTab === 'shelf' ? 'text-neon-cyan bg-white/10' : 'text-gray-500'}`}
           >
-            <span className="text-2xl">📚</span>
-            <span className="text-[10px] font-bold mt-1">レシピ本棚</span>
+            <span className="text-xl font-black">SHELF</span>
           </button>
         </div>
 
