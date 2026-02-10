@@ -98,8 +98,8 @@ export const DraggableRecipe = ({ id, name, image_url, category, rating, has_coo
             </div>
             {/* NEW Ribbon Badge */}
             {!has_cooked && (
-                <div className="absolute top-0 right-0 w-8 h-8 overflow-hidden pointer-events-none z-10">
-                    <div className="absolute top-[3px] -right-[12px] rotate-45 bg-neon-pink text-white text-[6px] font-black py-[2px] w-24 text-center border-y border-black shadow-sm tracking-widest">
+                <div className="absolute top-0 right-0 w-6 h-6 overflow-hidden pointer-events-none z-10">
+                    <div className="absolute top-[2px] -right-[10px] rotate-45 bg-neon-pink text-white text-[5px] font-black py-[1px] w-20 text-center border-y border-black shadow-md tracking-widest">
                         NEW
                     </div>
                 </div>
