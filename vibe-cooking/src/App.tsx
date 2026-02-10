@@ -9,7 +9,7 @@ import { WeeklyBoard } from './components/WeeklyBoard';
 import { DraggableRecipe } from './components/DraggableRecipe';
 import { PatrolView } from './components/PatrolView';
 import { SoupGachaModal } from './components/SoupGachaModal';
-import { FlyerAnalysisView } from './components/FlyerAnalysisView';
+
 
 import type { Recipe, WeeklyPlanItem, DaySetting } from './types';
 
@@ -252,7 +252,6 @@ function App() {
   };
 
   const handleAddRecipeFromPatrolUrl = (url: string) => handleImportRecipe(url);
-  const handleAddRecipeFromFlyerData = (recipe: Partial<Recipe>) => handleImportRecipe(recipe);
 
   const handleToggleDayType = async (date: Date, currentType: 'work' | 'home') => {
     if (!supabase) return;
@@ -361,12 +360,7 @@ function App() {
                 >
                   Buzz
                 </button>
-                <button
-                  onClick={() => setActiveTab('shopping')}
-                  className={`flex-1 py-2 text-xs font-black uppercase tracking-wider transition-all ${activeTab === 'shopping' ? 'bg-pink-500 text-white' : 'text-gray-400 hover:text-white'}`}
-                >
-                  Flyer
-                </button>
+
               </div>
 
               {/* Category Filter Chips (Only for My Recipes) */}
@@ -437,15 +431,7 @@ function App() {
                 </div>
               )}
 
-              {activeTab === 'shopping' && (
-                <div className="h-full">
-                  <FlyerAnalysisView
-                    // Explicitly passing (recipe: Partial<Recipe>) => void to satisfy type checker
-                    onAddRecipe={(recipe: Partial<Recipe>) => handleAddRecipeFromFlyerData(recipe) as any}
-                    existingRecipes={recipes}
-                  />
-                </div>
-              )}
+
             </div>
 
             {activeTab === 'my_recipes' && (
