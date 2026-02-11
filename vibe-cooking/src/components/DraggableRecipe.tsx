@@ -8,12 +8,14 @@ interface DraggableRecipeProps {
     category?: 'main' | 'side' | 'soup';
     rating?: number;
     has_cooked?: boolean;
+    is_coop?: boolean;
     is_hibernating?: boolean;
+    cooking_type?: 'renchin' | 'cook' | 'none';
     onDelete?: () => void;
     onEdit?: () => void;
 }
 
-export const DraggableRecipe = ({ id, name, image_url, category, rating, has_cooked, is_hibernating, onDelete, onEdit }: DraggableRecipeProps) => {
+export const DraggableRecipe = ({ id, name, image_url, category, rating, has_cooked, is_hibernating, is_coop, cooking_type, onDelete, onEdit }: DraggableRecipeProps) => {
     // ... hooks ...
     const { attributes, listeners, setNodeRef, transform } = useDraggable({
         id: id,
@@ -35,23 +37,34 @@ export const DraggableRecipe = ({ id, name, image_url, category, rating, has_coo
             style={style}
             {...listeners}
             {...attributes}
-            className={`group relative p-3 rounded-none bg-white border-2 border-black mb-2 cursor-grab active:cursor-grabbing hover:shadow-brutal hover:-translate-y-[2px] hover:-translate-x-[2px] transition-all select-none w-full`}
+            className={`group relative p-3 rounded-none bg-white border-2 ${is_coop ? 'border-dashed border-neon-cyan' : 'border-black'} mb-2 cursor-grab active:cursor-grabbing hover:shadow-brutal hover:-translate-y-[2px] hover:-translate-x-[2px] transition-all select-none w-full`}
         >
             <div className="flex items-center gap-3">
                 <div className={`w-8 h-8 flex flex-col items-center justify-center text-[8px] font-black border-2 border-black flex-shrink-0 relative shadow-[2px_2px_0px_0px_#000]
                     ${category === 'main' ? 'bg-red-500 text-white' : ''}
                     ${category === 'side' ? 'bg-green-500 text-black' : ''}
                     ${category === 'soup' ? 'bg-yellow-400 text-black' : ''}
-                    ${!category ? 'bg-gray-200 text-black' : ''}
+                    ${(!category && !is_coop) ? 'bg-gray-200 text-black' : ''}
+                    ${is_coop ? 'bg-white text-black' : ''}
                 `}>
-                    <span className="text-xs leading-none mb-[1px]">{name.slice(0, 1)}</span>
-                    <div className="flex gap-[1px]">
-                        {[...Array(rating || 1)].map((_, i) => (
-                            <span key={i} className="text-[6px] leading-none">★</span>
-                        ))}
-                    </div>
+                    {is_coop ? (
+                        <span className="text-lg leading-none">
+                            {cooking_type === 'renchin' && '⚡'}
+                            {cooking_type === 'cook' && '🔥'}
+                            {!cooking_type && '📦'}
+                        </span>
+                    ) : (
+                        <>
+                            <span className="text-xs leading-none mb-[1px]">{name.slice(0, 1)}</span>
+                            <div className="flex gap-[1px]">
+                                {[...Array(rating || 1)].map((_, i) => (
+                                    <span key={i} className="text-[6px] leading-none">★</span>
+                                ))}
+                            </div>
+                        </>
+                    )}
 
-                    {isQuick && (
+                    {isQuick && !is_coop && (
                         <div className="absolute -top-3 -right-3 bg-neon-yellow text-black border-2 border-black w-5 h-5 flex items-center justify-center text-[10px] shadow-sm animate-pulse z-10">
                             ⚡
                         </div>
@@ -64,6 +77,9 @@ export const DraggableRecipe = ({ id, name, image_url, category, rating, has_coo
 
                         {is_hibernating && (
                             <span className="bg-blue-200 text-blue-900 text-[8px] font-black px-1 border border-blue-900 uppercase tracking-tighter">ZZZ</span>
+                        )}
+                        {is_coop && (
+                            <span className="bg-neon-cyan text-black text-[8px] font-black px-1 border border-black uppercase tracking-tighter">CO-OP</span>
                         )}
                     </div>
                 </div>

@@ -8,6 +8,7 @@ import { RecipeDetailModal } from './components/RecipeDetailModal';
 import { WeeklyBoard } from './components/WeeklyBoard';
 import { DraggableRecipe } from './components/DraggableRecipe';
 import { PatrolView } from './components/PatrolView';
+import { CoopImportModal } from './components/CoopImportModal';
 import { SoupGachaModal } from './components/SoupGachaModal';
 
 
@@ -22,7 +23,6 @@ function App() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [plans, setPlans] = useState<WeeklyPlanItem[]>([]);
   const [daySettings, setDaySettings] = useState<DaySetting[]>([]);
-  const [loading, setLoading] = useState(true);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [activeRecipe, setActiveRecipe] = useState<Recipe | null>(null);
   const [activeTab, setActiveTab] = useState<'my_recipes' | 'coop' | 'buzz' | 'shopping'>('my_recipes');
@@ -54,18 +54,69 @@ function App() {
     useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } })
   );
 
+  const [isCoopImportOpen, setIsCoopImportOpen] = useState(false);
+
+  // Load recipes from Supabase
+  useEffect(() => {
+    fetchRecipes();
+  }, []);
+
   const fetchRecipes = async () => {
-    if (!supabase) {
-      setLoading(false);
-      return;
-    }
+    if (!supabase) return;
     const { data, error } = await supabase
       .from('recipes')
-      .select('*')
-      .order('created_at', { ascending: false });
+      .select('*');
+    if (error) console.error('Error fetching recipes:', error);
+    else setRecipes(data || []);
+  };
 
-    if (!error) setRecipes(data || []);
-    setLoading(false);
+  const handleCoopImport = async (text: string) => {
+    const lines = text.split('\n').filter(line => line.trim());
+    const newRecipes: Recipe[] = [];
+
+    for (const line of lines) {
+      // Simple extraction logic (can be enhanced later)
+      let name = line.trim();
+      let cooking_type: 'renchin' | 'cook' | 'none' = 'cook'; // Default to cook
+
+      if (name.includes('レンジ') || name.includes('チン') || name.includes('即食')) {
+        cooking_type = 'renchin';
+      }
+
+      // Clean up name (optional)
+      // name = name.replace(/（.*?）/g, '').trim();
+
+      const newRecipe: Recipe = {
+        id: crypto.randomUUID(),
+        name: name,
+        url: '',
+        frequency: 'none',
+        child_rating: 0,
+        memo: 'CO-OP Import',
+        category: 'main', // Default to main
+        ingredients: [],
+        work_duration: cooking_type === 'renchin' ? 5 : 20,
+        arrangements: [],
+        rating: 1,
+        has_cooked: false,
+        is_hibernating: false,
+        is_coop: true,
+        cooking_type: cooking_type
+      };
+      newRecipes.push(newRecipe);
+    }
+
+    if (newRecipes.length > 0) {
+      if (!supabase) return;
+      const { error } = await supabase.from('recipes').insert(newRecipes);
+      if (error) {
+        console.error('Error importing recipes:', error);
+        alert('Import failed!');
+      } else {
+        setRecipes(prev => [...prev, ...newRecipes]);
+        alert(`${newRecipes.length} items imported!`);
+      }
+    }
   };
 
   const fetchWeeklyPlan = async () => {
@@ -413,10 +464,12 @@ function App() {
                       rating={recipe.rating}
                       has_cooked={recipe.has_cooked}
                       is_hibernating={recipe.is_hibernating}
+                      is_coop={recipe.is_coop}
+                      cooking_type={recipe.cooking_type}
                       onEdit={() => setEditingRecipe(recipe)}
                     />
                   ))}
-                  {filteredRecipes.length === 0 && !loading && (
+                  {filteredRecipes.length === 0 && (
                     <div className="text-center mt-10 p-8 border-4 border-dashed border-gray-800">
                       <p className="text-gray-600 font-black uppercase text-xl">NO DATA</p>
                       <p className="text-gray-700 text-xs mt-2">ADD NEW PROJECT</p>
@@ -495,10 +548,16 @@ function App() {
       </div>
 
       <RecipeDetailModal
-        recipe={editingRecipe}
         isOpen={!!editingRecipe}
         onClose={() => setEditingRecipe(null)}
+        recipe={editingRecipe}
         onUpdate={fetchRecipes}
+      />
+
+      <CoopImportModal
+        isOpen={isCoopImportOpen}
+        onClose={() => setIsCoopImportOpen(false)}
+        onImport={handleCoopImport}
       />
 
       <SoupGachaModal

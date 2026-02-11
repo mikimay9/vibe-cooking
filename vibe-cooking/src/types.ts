@@ -12,6 +12,8 @@ export interface Recipe {
     rating?: 1 | 2 | 3;
     has_cooked?: boolean;
     is_hibernating?: boolean;
+    is_coop?: boolean;
+    cooking_type?: 'renchin' | 'cook' | 'none';
 }
 
 export interface WeeklyPlanItem {
