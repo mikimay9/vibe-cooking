@@ -14,11 +14,18 @@ export interface Recipe {
     is_hibernating?: boolean;
     is_coop?: boolean;
     cooking_type?: 'renchin' | 'cook' | 'none';
+    quantity?: number; // New: For Digital Twin inventory tracking
 }
 
 export interface WeeklyPlanItem {
     id: string;
-    recipe: { id: string, name: string };
+    recipe: {
+        id: string;
+        name: string;
+        is_coop?: boolean;
+        cooking_type?: 'renchin' | 'cook' | 'none';
+        quantity?: number;
+    };
     slot_type: 'main' | 'side' | 'soup';
     date: string;
     day_type: 'work' | 'home';

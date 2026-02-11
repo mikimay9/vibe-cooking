@@ -12,11 +12,12 @@ interface DraggableRecipeProps {
     is_coop?: boolean;
     is_hibernating?: boolean;
     cooking_type?: 'renchin' | 'cook' | 'none';
+    quantity?: number;
     onDelete?: () => void;
     onEdit?: () => void;
 }
 
-export const DraggableRecipe = ({ id, name, image_url, category, rating, has_cooked, is_hibernating, is_coop, cooking_type, onDelete, onEdit }: DraggableRecipeProps) => {
+export const DraggableRecipe = ({ id, name, image_url, category, rating, has_cooked, is_hibernating, is_coop, cooking_type, quantity, onDelete, onEdit }: DraggableRecipeProps) => {
     // ... hooks ...
     const { attributes, listeners, setNodeRef, transform } = useDraggable({
         id: id,
@@ -46,13 +47,14 @@ export const DraggableRecipe = ({ id, name, image_url, category, rating, has_coo
                     ${category === 'side' ? 'bg-green-500 text-black' : ''}
                     ${category === 'soup' ? 'bg-yellow-400 text-black' : ''}
                     ${(!category && !is_coop) ? 'bg-gray-200 text-black' : ''}
-                    ${is_coop ? 'bg-white text-black' : ''}
+                    ${(is_coop && !category) ? 'bg-white text-black' : ''}
                 `}>
                     {is_coop ? (
                         <div className="flex items-center justify-center w-full h-full">
-                            {cooking_type === 'renchin' && <Zap size={18} className="text-neon-cyan" fill="currentColor" />}
-                            {cooking_type === 'cook' && <Flame size={18} className="text-red-500" fill="currentColor" />}
-                            {!cooking_type || cooking_type === 'none' && <Package size={18} className="text-gray-400" />}
+                            {/* For Co-op, we prioritize contrast. If category gives colored bg, icons should probable be white or black. */}
+                            {cooking_type === 'renchin' && <Zap size={18} className="text-white drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]" fill="currentColor" />}
+                            {cooking_type === 'cook' && <Flame size={18} className="text-white drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]" fill="currentColor" />}
+                            {!cooking_type || cooking_type === 'none' && <Package size={18} className="text-white drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]" />}
                         </div>
                     ) : (
                         <>
@@ -63,6 +65,13 @@ export const DraggableRecipe = ({ id, name, image_url, category, rating, has_coo
                                 ))}
                             </div>
                         </>
+                    )}
+
+                    {/* Quantity Badge for Co-op */}
+                    {is_coop && (quantity !== undefined && quantity > 1) && (
+                        <div className="absolute -top-2 -right-2 bg-black text-white border border-white w-5 h-5 flex items-center justify-center text-[10px] font-bold rounded-full z-10 shadow-sm">
+                            x{quantity}
+                        </div>
                     )}
 
                     {isQuick && !is_coop && (

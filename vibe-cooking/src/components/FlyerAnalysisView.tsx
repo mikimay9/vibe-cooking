@@ -1,23 +1,16 @@
 
 import { useState, useRef } from 'react';
-import { Upload, Camera, Loader2, ChefHat, Sparkles, X, ShoppingCart } from 'lucide-react';
+import { Upload, Camera, Loader2, ChefHat, Sparkles, X, ShoppingCart, CheckCircle } from 'lucide-react';
 import type { Recipe } from '../types';
+import { analyzeFlyer } from '../lib/flyer-analysis-service';
+import type { AnalysisResult } from '../lib/flyer-analysis-service';
 
 interface FlyerAnalysisViewProps {
     onAddRecipe: (recipe: Partial<Recipe>) => void;
     existingRecipes: Recipe[];
 }
 
-interface AnalysisResult {
-    bargains: string[];
-    recipes: {
-        name: string;
-        reason: string;
-        is_new?: boolean;
-    }[];
-}
-
-// Helper to resize image
+// Helper to resize image (Same as before)
 const resizeImage = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -27,8 +20,8 @@ const resizeImage = (file: File): Promise<string> => {
             img.src = event.target?.result as string;
             img.onload = () => {
                 const canvas = document.createElement('canvas');
-                // Tweak: Lower resolution and quality to avoid Vercel 4.5MB payload limit
-                const MAX_WIDTH = 500;
+                // Tweak: Lower resolution and quality to avoid payload limit
+                const MAX_WIDTH = 800; // Increased slightly for better OCR
                 const scaleSize = MAX_WIDTH / img.width;
                 const width = Math.min(MAX_WIDTH, img.width);
                 const height = img.height * (width < img.width ? scaleSize : 1);
@@ -38,8 +31,8 @@ const resizeImage = (file: File): Promise<string> => {
 
                 const ctx = canvas.getContext('2d');
                 ctx?.drawImage(img, 0, 0, width, height);
-                // Compress to JPEG 50% quality
-                const dataUrl = canvas.toDataURL('image/jpeg', 0.5);
+                // Compress to JPEG 60% quality
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
                 resolve(dataUrl);
             };
             img.onerror = (error) => reject(error);
@@ -59,8 +52,6 @@ export const FlyerAnalysisView = ({ onAddRecipe, existingRecipes }: FlyerAnalysi
         if (files && files.length > 0) {
             setResult(null);
             const newImages: string[] = [];
-
-            // Process up to 2 images
             const count = Math.min(files.length, 2 - images.length);
 
             for (let i = 0; i < count; i++) {
@@ -71,10 +62,8 @@ export const FlyerAnalysisView = ({ onAddRecipe, existingRecipes }: FlyerAnalysi
                     console.error('Resize failed', err);
                 }
             }
-
             setImages(prev => [...prev, ...newImages].slice(0, 2));
         }
-        // Reset input so same file can be selected again if needed
         if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
@@ -88,53 +77,13 @@ export const FlyerAnalysisView = ({ onAddRecipe, existingRecipes }: FlyerAnalysi
         setAnalyzing(true);
         setResult(null);
 
-        // Check payload size roughly
-        const totalSize = images.reduce((acc, img) => acc + img.length, 0);
-        console.log('Sending payload size (Approx characters):', totalSize, 'Limit: 4000000');
-
-        // Base64 string length ~ 1.33 * size in bytes. 
-        // Vercel limit is 4.5MB (approx 5.9M chars). 
-        // We set safe limit at 4MB (approx 4M bytes * 1.33 = 5.3M chars?). 
-        // Actually 4MB bytes = 4 * 1024 * 1024 = 4,194,304 bytes.
-        // In Base64: 4,194,304 * 1.37 approx = 5,746,196 chars.
-        // Setting limit at 4,500,000 chars is very safe (~3.2MB bytes).
-        if (totalSize > 4500000) {
-            alert(`画像サイズが大きすぎます(現在: ${(totalSize / 1024 / 1024).toFixed(2)}MB相当)。枚数を減らすか、トリミングしてください。`);
-            setAnalyzing(false);
-            return;
-        }
-
         try {
-            const response = await fetch('/api/flyer-analysis', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    images, // Send array of images
-                    recipes: existingRecipes.map(r => ({ name: r.name, id: r.id }))
-                })
-            });
-
-            if (!response.ok) {
-                // Try to get text if json fails
-                const text = await response.text();
-                let errorDetails = text;
-                try {
-                    const json = JSON.parse(text);
-                    // Combine error and details for visibility
-                    errorDetails = [json.error, json.details].filter(Boolean).join(': ');
-                    if (!errorDetails) errorDetails = text;
-                } catch {
-                    // ignore
-                }
-                throw new Error(`Server Error (${response.status}): ${errorDetails}`);
-            }
-
-            const data = await response.json();
+            const data = await analyzeFlyer(images, existingRecipes);
             setResult(data);
         } catch (error: unknown) {
-            console.error('Full Error Object:', error);
+            console.error('Analysis Error:', error);
             const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-            alert(`分析に失敗しました: ${errorMessage}`);
+            alert(`分析に失敗しました: ${errorMessage}\n.envの設定を確認してください。`);
         } finally {
             setAnalyzing(false);
         }
@@ -230,18 +179,33 @@ export const FlyerAnalysisView = ({ onAddRecipe, existingRecipes }: FlyerAnalysi
 
                         {result.recipes.map((recipe, idx) => (
                             <div key={idx} className={`p-4 border-2 border-black shadow-brutal relative ${recipe.is_new ? 'bg-neon-yellow/10' : 'bg-white'}`}>
-                                {recipe.is_new && (
+                                {recipe.is_new ? (
                                     <span className="absolute -top-3 -right-2 bg-neon-pink text-white text-[10px] font-black px-2 py-1 border-2 border-black shadow-sm transform rotate-3">
                                         NEW IDEA!
+                                    </span>
+                                ) : (
+                                    <span className="absolute -top-3 -right-2 bg-black text-neon-yellow text-[10px] font-black px-2 py-1 border-2 border-black shadow-sm transform -rotate-2">
+                                        EXISTING
                                     </span>
                                 )}
                                 <h4 className="font-black text-lg text-black mb-2 uppercase">{recipe.name}</h4>
                                 <p className="text-xs text-gray-600 mb-4 font-mono leading-relaxed">{recipe.reason}</p>
                                 <button
-                                    onClick={() => onAddRecipe({ name: recipe.name, category: 'main' })} // Default to main for now
-                                    className="w-full bg-white border-2 border-black hover:bg-black hover:text-white text-black text-xs font-black py-3 transition-colors flex items-center justify-center gap-2 uppercase tracking-wider"
+                                    onClick={() => {
+                                        const recipeData: Partial<Recipe> = {
+                                            name: recipe.name,
+                                            category: recipe.category || 'main',
+                                            ingredients: recipe.ingredients && recipe.ingredients.length > 0
+                                                ? recipe.ingredients
+                                                : result.bargains,
+                                            memo: recipe.reason
+                                        };
+                                        onAddRecipe(recipeData);
+                                    }}
+                                    className="w-full bg-white border-2 border-black hover:bg-black hover:text-white text-black text-xs font-black py-3 transition-colors flex items-center justify-center gap-2 uppercase tracking-wider group"
                                 >
-                                    ＋ ADD TO STOCK
+                                    <CheckCircle size={16} className="group-hover:text-neon-green" />
+                                    ADD TO STOCK
                                 </button>
                             </div>
                         ))}

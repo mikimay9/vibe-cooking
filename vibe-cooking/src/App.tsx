@@ -11,11 +11,12 @@ import { PatrolView } from './components/PatrolView';
 import { CoopImportModal } from './components/CoopImportModal';
 import { SoupGachaModal } from './components/SoupGachaModal';
 import { ShoppingCart } from 'lucide-react';
-
-
+import { FlyerAnalysisView } from './components/FlyerAnalysisView';
 import type { Recipe, WeeklyPlanItem, DaySetting } from './types';
 
-const SidebarDroppable = ({ children }: { children: React.ReactNode }) => {
+// ... (existing imports)
+
+export const SidebarDroppable = ({ children }: { children: React.ReactNode }) => {
   const { setNodeRef } = useDroppable({ id: 'sidebar-bookshelf' });
   return <div ref={setNodeRef} className="flex-1 flex flex-col h-full">{children}</div>;
 };
@@ -26,7 +27,12 @@ function App() {
   const [daySettings, setDaySettings] = useState<DaySetting[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [activeRecipe, setActiveRecipe] = useState<Recipe | null>(null);
-  const [activeTab, setActiveTab] = useState<'my_recipes' | 'coop' | 'buzz' | 'shopping'>('my_recipes');
+  const [activeTab, setActiveTab] = useState<'my_recipes' | 'coop' | 'buzz' | 'flyer'>('my_recipes');
+
+  // Flyer Analysis State
+  // const [currentBargains, setCurrentBargains] = useState<string[]>([]);
+
+  // ... (rest of state)
   const [editingRecipe, setEditingRecipe] = useState<Recipe | null>(null);
 
   // Gacha State
@@ -94,7 +100,7 @@ function App() {
       .from('weekly_plan')
       .select(`
             id, date, slot_type, day_type, created_at,
-            recipe:recipes (id, name, is_coop, cooking_type)
+            recipe:recipes (id, name, is_coop, cooking_type, quantity)
         `)
       .gte('date', format(startDate, 'yyyy-MM-dd'))
       .lte('date', format(endDate, 'yyyy-MM-dd'))
@@ -121,8 +127,32 @@ function App() {
     fetchWeeklyPlan();
   }, [startDate]);
 
+  const updateRecipeQuantity = async (recipeId: string, delta: number) => {
+    if (!supabase) return;
+
+    // Optimistic update
+    setRecipes(prev => prev.map(r =>
+      r.id === recipeId ? { ...r, quantity: (r.quantity || 1) + delta } : r
+    ));
+
+    // DB update (using rpc to be safe effectively, or just simple update since single user)
+    // fetching current first to be safe
+    const { data: current } = await supabase.from('recipes').select('quantity').eq('id', recipeId).single();
+    if (current) {
+      const newQty = (current.quantity || 1) + delta;
+      await supabase.from('recipes').update({ quantity: newQty }).eq('id', recipeId);
+    }
+  };
+
   const handleDeletePlan = async (id: string) => {
     if (!supabase) return;
+
+    // Check if plan item is Co-op to restore quantity
+    const planToDelete = plans.find(p => p.id === id);
+    if (planToDelete && planToDelete.recipe.is_coop) {
+      await updateRecipeQuantity(planToDelete.recipe.id, 1);
+    }
+
     const { error } = await supabase.from('weekly_plan').delete().eq('id', id);
     if (!error) fetchWeeklyPlan();
   };
@@ -168,6 +198,8 @@ function App() {
     // Case 1: Sidebar -> Board Slot (Create/Overwrite)
     if (activeIdStr.startsWith('recipe-') && isSlotDrop) {
       const recipeId = activeIdStr.replace('recipe-', '');
+      const originalRecipe = recipes.find(r => r.id === recipeId);
+
       const dateStr = overIdStr.substring(0, 10);
       const remainder = overIdStr.substring(11);
 
@@ -182,7 +214,19 @@ function App() {
 
       const victim = findVictim(dateStr, slotType, targetIndex);
 
+      // Digital Twin: Consume Inventory
+      if (originalRecipe?.is_coop) {
+        // If quantity is 0 or less, maybe block? But user might want to force it.
+        // Let's just decrement.
+        await updateRecipeQuantity(recipeId, -1);
+      }
+
       if (victim) {
+        // Digital Twin: Restore Inventory of victim
+        if (victim.recipe.is_coop) {
+          await updateRecipeQuantity(victim.recipe.id, 1);
+        }
+
         // Overwrite existing
         const { error } = await supabase
           .from('weekly_plan')
@@ -203,15 +247,10 @@ function App() {
       }
     }
 
-    // Case 2: Board Slot -> Sidebar (Delete)
+    // Case 2: Board Slot -> Sidebar (Delete) or just Delete
     if (activeIdStr.startsWith('plan-') && isSidebarDrop) {
       const planId = activeIdStr.replace('plan-', '');
-      const { error } = await supabase
-        .from('weekly_plan')
-        .delete()
-        .eq('id', planId);
-
-      if (!error) fetchWeeklyPlan();
+      await handleDeletePlan(planId); // Re-use handleDeletePlan which now handles restoration
     }
 
     // Case 3: Board Slot -> Board Slot (Move/Overwrite)
@@ -235,6 +274,11 @@ function App() {
       if (victim && victim.id === planId) return;
 
       if (victim) {
+        // Digital Twin: Restore Inventory of victim
+        if (victim.recipe.is_coop) {
+          await updateRecipeQuantity(victim.recipe.id, 1);
+        }
+
         // Delete victim
         await supabase.from('weekly_plan').delete().eq('id', victim.id);
       }
@@ -257,6 +301,8 @@ function App() {
       setRecipeFormInitialData(undefined);
     } else {
       setRecipeFormInitialUrl('');
+      // User requested: "Extracted bargain ingredients name set to materials field (comma separated)"
+      // The form expects string[] for initialData.ingredients.
       setRecipeFormInitialData({
         name: input.name,
         category: input.category as 'main' | 'side' | 'soup',
@@ -268,7 +314,9 @@ function App() {
     setIsRecipeFormOpen(true);
   };
 
-  const handleAddRecipeFromPatrolUrl = (url: string) => handleImportRecipe(url);
+  const handlePatrolImport = (url: string) => handleImportRecipe(url);
+  const handleFlyerImport = (data: Partial<Recipe>) => handleImportRecipe(data);
+
 
   const handleToggleDayType = async (date: Date, currentType: 'work' | 'home') => {
     if (!supabase) return;
@@ -332,12 +380,16 @@ function App() {
     }
   };
 
+
+
   // Mobile State
   const [activeMobileTab, setActiveMobileTab] = useState<'board' | 'shelf'>('board');
 
   const filteredRecipes = recipes.filter(recipe => {
     if (activeTab === 'coop') {
-      return recipe.is_coop;
+      if (!recipe.is_coop) return false;
+      if (filterCategory === 'all') return true;
+      return recipe.category === filterCategory;
     }
     if (activeTab === 'my_recipes') {
       if (recipe.is_coop) return false; // Filter out Co-op items
@@ -360,13 +412,6 @@ function App() {
             <div className="p-4 border-b-4 border-white/20 bg-black flex justify-between items-center">
               <div className="flex items-center gap-2">
                 <h2 className="text-2xl font-black italic tracking-tighter text-neon-yellow uppercase">Stock</h2>
-                <button
-                  onClick={() => setIsCoopImportOpen(true)}
-                  className="p-1.5 bg-white text-black border-2 border-transparent hover:border-black hover:bg-neon-cyan transition-colors shadow-sm"
-                  title="IMPORT CO-OP"
-                >
-                  <ShoppingCart size={16} strokeWidth={3} />
-                </button>
               </div>
               {/* Mobile Only Close Button */}
               <button
@@ -398,11 +443,16 @@ function App() {
                 >
                   BUZZ
                 </button>
-
+                <button
+                  onClick={() => setActiveTab('flyer')}
+                  className={`flex-1 py-2 text-xs font-black uppercase tracking-wider transition-all ${activeTab === 'flyer' ? 'bg-orange-500 text-black' : 'text-gray-400 hover:text-white'}`}
+                >
+                  FLYER
+                </button>
               </div>
 
-              {/* Category Filter Chips (Only for My Recipes) */}
-              {activeTab === 'my_recipes' && (
+              {/* Category Filter Chips (For My Recipes AND Co-op) */}
+              {(activeTab === 'my_recipes' || activeTab === 'coop') && (
                 <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
                   <button
                     onClick={() => setFilterCategory('all')}
@@ -448,6 +498,7 @@ function App() {
                       is_hibernating={recipe.is_hibernating}
                       is_coop={recipe.is_coop}
                       cooking_type={recipe.cooking_type}
+                      quantity={recipe.quantity}
                       onEdit={() => setEditingRecipe(recipe)}
                     />
                   ))}
@@ -482,6 +533,7 @@ function App() {
                       is_hibernating={recipe.is_hibernating}
                       is_coop={recipe.is_coop}
                       cooking_type={recipe.cooking_type}
+                      quantity={recipe.quantity}
                       onEdit={() => setEditingRecipe(recipe)}
                     />
                   ))}
@@ -496,7 +548,16 @@ function App() {
 
               {activeTab === 'buzz' && (
                 <div className="h-full">
-                  <PatrolView onAddRecipe={handleAddRecipeFromPatrolUrl} />
+                  <PatrolView onAddRecipe={(url: string) => handlePatrolImport(url)} />
+                </div>
+              )}
+
+              {activeTab === 'flyer' && (
+                <div className="h-full">
+                  <FlyerAnalysisView
+                    existingRecipes={recipes}
+                    onAddRecipe={(data: Partial<Recipe>) => handleFlyerImport(data)}
+                  />
                 </div>
               )}
 

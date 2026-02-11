@@ -14,6 +14,8 @@ interface ParsedItem {
     id: string;
     name: string;
     cooking_type: 'renchin' | 'cook' | 'none';
+    quantity: number;
+    category: 'main' | 'side' | 'soup';
 }
 
 export const CoopImportModal = ({ isOpen, onClose, onImport }: CoopImportModalProps) => {
@@ -27,28 +29,58 @@ export const CoopImportModal = ({ isOpen, onClose, onImport }: CoopImportModalPr
         const lines = inputText.split('\n');
         const items: ParsedItem[] = [];
 
-        lines.forEach(line => {
-            const trimmed = line.trim();
-            // Match "商品名：" or "商品名:" followed by text
-            const match = trimmed.match(/^商品名[:：]\s*(.*)/);
+        let currentName = '';
+        let currentQuantity = 1;
 
-            if (match) {
-                const name = match[1].trim();
-                let type: 'renchin' | 'cook' | 'none' = 'none'; // Default to unknown (user must check)
+        // Simple state machine or just iterating blocks?
+        // Let's assume standard format block:
+        // 商品名：xxx
+        // ...
+        // 数量：x点
 
-                if (name.includes('レンジ') || name.includes('チン') || name.includes('即食')) {
+        // Actually, regex across lines might be hard with line-by-line.
+        // Let's try block parsing or just keeping state.
+
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
+            const nameMatch = line.match(/^商品名[:：]\s*(.*)/);
+            if (nameMatch) {
+                currentName = nameMatch[1].trim();
+                currentQuantity = 1; // reset default
+
+                // Look ahead for quantity in next few lines? 
+                // Or just continue parsing and push when next Item starts?
+                // Complication: Email format might be variable.
+                // Let's try to find quantity in the *same block*.
+                // We'll scan forward until next "商品名" or end of text.
+
+                for (let j = i + 1; j < lines.length; j++) {
+                    const subLine = lines[j].trim();
+                    if (subLine.match(/^商品名[:：]/)) break; // Next item started
+
+                    const qtyMatch = subLine.match(/^数量[:：]\s*(\d+)/);
+                    if (qtyMatch) {
+                        currentQuantity = parseInt(qtyMatch[1], 10);
+                        break;
+                    }
+                }
+
+                let type: 'renchin' | 'cook' | 'none' = 'none';
+                if (currentName.includes('レンジ') || currentName.includes('チン') || currentName.includes('即食')) {
                     type = 'renchin';
-                } else if (name.includes('フライ') || name.includes('カツ') || name.includes('焼') || name.includes('炒め') || name.includes('煮')) {
-                    type = 'cook'; // Guess cook for raw/fry items
+                } else if (currentName.includes('フライ') || currentName.includes('カツ') || currentName.includes('焼') || currentName.includes('炒め') || currentName.includes('煮')) {
+                    type = 'cook';
                 }
 
                 items.push({
                     id: crypto.randomUUID(),
-                    name,
-                    cooking_type: type
+                    name: currentName,
+                    cooking_type: type,
+                    quantity: currentQuantity,
+                    category: 'main' // Default to main
                 });
             }
-        });
+        }
         return items;
     };
 
@@ -69,6 +101,18 @@ export const CoopImportModal = ({ isOpen, onClose, onImport }: CoopImportModalPr
         ));
     };
 
+    const handleQuantityChange = (id: string, delta: number) => {
+        setParsedItems(prev => prev.map(item =>
+            item.id === id ? { ...item, quantity: Math.max(1, item.quantity + delta) } : item
+        ));
+    };
+
+    const handleCategoryChange = (id: string, cat: 'main' | 'side' | 'soup') => {
+        setParsedItems(prev => prev.map(item =>
+            item.id === id ? { ...item, category: cat } : item
+        ));
+    };
+
     const handleConfirmImport = () => {
         const recipes: Recipe[] = parsedItems.map(item => ({
             id: item.id,
@@ -77,7 +121,7 @@ export const CoopImportModal = ({ isOpen, onClose, onImport }: CoopImportModalPr
             frequency: 'none',
             child_rating: 3,
             memo: 'CO-OP Import',
-            category: 'main',
+            category: item.category,
             ingredients: [],
             work_duration: item.cooking_type === 'renchin' ? 5 : 20,
             arrangements: [],
@@ -85,11 +129,11 @@ export const CoopImportModal = ({ isOpen, onClose, onImport }: CoopImportModalPr
             has_cooked: false,
             is_hibernating: false,
             is_coop: true,
-            cooking_type: item.cooking_type === 'none' ? 'cook' : item.cooking_type // Default 'none' to 'cook' if missed, or maybe keep none?
+            cooking_type: item.cooking_type === 'none' ? 'cook' : item.cooking_type,
+            quantity: item.quantity
         }));
         onImport(recipes);
 
-        // Reset
         setText('');
         setParsedItems([]);
         setStep('input');
@@ -119,7 +163,7 @@ export const CoopImportModal = ({ isOpen, onClose, onImport }: CoopImportModalPr
                 <div className="p-6 flex-1 overflow-y-auto">
                     {step === 'input' ? (
                         <div className="space-y-4">
-                            <p className="font-bold text-sm">CO-OPの注文確認メール全文を貼り付けてください。<br />「商品名：」の行を自動検出します。</p>
+                            <p className="font-bold text-sm">CO-OPの注文確認メール全文を貼り付けてください。<br />「商品名：」と「数量：」を自動検出します。</p>
                             <textarea
                                 className="w-full h-64 p-4 border-2 border-black font-mono text-xs resize-none focus:outline-none focus:shadow-[4px_4px_0px_0px_#000] transition-shadow bg-gray-50"
                                 placeholder={`注文番号：000209\n商品名：骨取りさばの味噌煮（レンジ）\n数量：2点\n...`}
@@ -131,35 +175,78 @@ export const CoopImportModal = ({ isOpen, onClose, onImport }: CoopImportModalPr
                         <div className="space-y-4">
                             <p className="font-bold text-sm flex items-center gap-2">
                                 <AlertCircle size={16} />
-                                {parsedItems.length} 件検出しました。調理タイプを確認してください。
+                                {parsedItems.length} 件検出しました。数量と調理タイプを確認してください。
                             </p>
                             <div className="space-y-2">
                                 {parsedItems.map(item => (
                                     <div key={item.id} className="flex flex-col sm:flex-row sm:items-center gap-2 p-2 border-2 border-dashed border-gray-300 bg-gray-50">
-                                        <span className="flex-1 font-bold text-sm">{item.name}</span>
-                                        <span className="flex-1 font-bold text-sm">{item.name}</span>
-                                        <div className="flex gap-1 shrink-0">
-                                            <button
-                                                onClick={() => handleTypeChange(item.id, 'renchin')}
-                                                className={`px-3 py-1 flex items-center justify-center border-2 border-black transition-colors ${item.cooking_type === 'renchin' ? 'bg-neon-cyan text-white' : 'bg-white text-gray-400'}`}
-                                                title="RANGE"
-                                            >
-                                                <Zap size={16} fill={item.cooking_type === 'renchin' ? "currentColor" : "none"} />
-                                            </button>
-                                            <button
-                                                onClick={() => handleTypeChange(item.id, 'cook')}
-                                                className={`px-3 py-1 flex items-center justify-center border-2 border-black transition-colors ${item.cooking_type === 'cook' ? 'bg-red-500 text-white' : 'bg-white text-gray-400'}`}
-                                                title="COOK"
-                                            >
-                                                <Flame size={16} fill={item.cooking_type === 'cook' ? "currentColor" : "none"} />
-                                            </button>
-                                            <button
-                                                onClick={() => handleTypeChange(item.id, 'none')}
-                                                className={`px-3 py-1 flex items-center justify-center border-2 border-black transition-colors ${item.cooking_type === 'none' ? 'bg-gray-500 text-white' : 'bg-white text-gray-400'}`}
-                                                title="OTHER"
-                                            >
-                                                <Package size={16} />
-                                            </button>
+                                        <div className="flex-1 min-w-0">
+                                            <span className="font-bold text-sm break-words">{item.name}</span>
+                                            {/* Category Selector */}
+                                            <div className="flex gap-1 mt-1">
+                                                <button
+                                                    onClick={() => handleCategoryChange(item.id, 'main')}
+                                                    className={`px-2 py-0.5 text-[10px] font-bold border border-black ${item.category === 'main' ? 'bg-red-500 text-white' : 'bg-white text-gray-400'}`}
+                                                >
+                                                    MAIN
+                                                </button>
+                                                <button
+                                                    onClick={() => handleCategoryChange(item.id, 'side')}
+                                                    className={`px-2 py-0.5 text-[10px] font-bold border border-black ${item.category === 'side' ? 'bg-green-500 text-black' : 'bg-white text-gray-400'}`}
+                                                >
+                                                    SIDE
+                                                </button>
+                                                <button
+                                                    onClick={() => handleCategoryChange(item.id, 'soup')}
+                                                    className={`px-2 py-0.5 text-[10px] font-bold border border-black ${item.category === 'soup' ? 'bg-yellow-400 text-black' : 'bg-white text-gray-400'}`}
+                                                >
+                                                    SOUP
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center gap-4 shrink-0">
+                                            {/* Quantity Control */}
+                                            <div className="flex items-center border-2 border-black bg-white">
+                                                <button
+                                                    onClick={() => handleQuantityChange(item.id, -1)}
+                                                    className="w-8 h-8 flex items-center justify-center hover:bg-gray-200 font-bold border-r-2 border-black"
+                                                >
+                                                    -
+                                                </button>
+                                                <span className="w-8 text-center font-black text-sm">{item.quantity}</span>
+                                                <button
+                                                    onClick={() => handleQuantityChange(item.id, 1)}
+                                                    className="w-8 h-8 flex items-center justify-center hover:bg-gray-200 font-bold border-l-2 border-black"
+                                                >
+                                                    +
+                                                </button>
+                                            </div>
+
+                                            {/* Type Control */}
+                                            <div className="flex gap-1">
+                                                <button
+                                                    onClick={() => handleTypeChange(item.id, 'renchin')}
+                                                    className={`px-3 py-1 flex items-center justify-center border-2 border-black transition-colors ${item.cooking_type === 'renchin' ? 'bg-yellow-400 text-black' : 'bg-white text-gray-400'}`}
+                                                    title="RANGE"
+                                                >
+                                                    <Zap size={16} fill={item.cooking_type === 'renchin' ? "currentColor" : "none"} />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleTypeChange(item.id, 'cook')}
+                                                    className={`px-3 py-1 flex items-center justify-center border-2 border-black transition-colors ${item.cooking_type === 'cook' ? 'bg-red-500 text-white' : 'bg-white text-gray-400'}`}
+                                                    title="COOK"
+                                                >
+                                                    <Flame size={16} fill={item.cooking_type === 'cook' ? "currentColor" : "none"} />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleTypeChange(item.id, 'none')}
+                                                    className={`px-3 py-1 flex items-center justify-center border-2 border-black transition-colors ${item.cooking_type === 'none' ? 'bg-gray-500 text-white' : 'bg-white text-gray-400'}`}
+                                                    title="OTHER"
+                                                >
+                                                    <Package size={16} />
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 ))}
