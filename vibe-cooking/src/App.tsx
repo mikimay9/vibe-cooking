@@ -10,6 +10,7 @@ import { DraggableRecipe } from './components/DraggableRecipe';
 import { PatrolView } from './components/PatrolView';
 import { CoopImportModal } from './components/CoopImportModal';
 import { SoupGachaModal } from './components/SoupGachaModal';
+import { ShoppingCart } from 'lucide-react';
 
 
 import type { Recipe, WeeklyPlanItem, DaySetting } from './types';
@@ -385,7 +386,16 @@ function App() {
         `}>
           <SidebarDroppable>
             <div className="p-4 border-b-4 border-white/20 bg-black flex justify-between items-center">
-              <h2 className="text-2xl font-black italic tracking-tighter text-neon-yellow uppercase">Recipe Stock</h2>
+              <div className="flex items-center gap-2">
+                <h2 className="text-2xl font-black italic tracking-tighter text-neon-yellow uppercase">Stock</h2>
+                <button
+                  onClick={() => setIsCoopImportOpen(true)}
+                  className="p-1.5 bg-white text-black border-2 border-transparent hover:border-black hover:bg-neon-cyan transition-colors shadow-sm"
+                  title="IMPORT CO-OP"
+                >
+                  <ShoppingCart size={16} strokeWidth={3} />
+                </button>
+              </div>
               {/* Mobile Only Close Button */}
               <button
                 onClick={() => setActiveMobileTab('board')}
@@ -482,7 +492,13 @@ function App() {
                 <div className="text-center text-gray-500 mt-10 p-8 border-4 border-dashed border-gray-800">
                   <p className="text-4xl mb-4">🚚</p>
                   <p className="font-bold uppercase">CO-OP SYSTEM</p>
-                  <p className="text-xs mt-2 font-mono">CONNECTION PENDING...</p>
+                  <button
+                    onClick={() => setIsCoopImportOpen(true)}
+                    className="mt-4 px-4 py-2 bg-neon-cyan text-black font-bold border-2 border-black shadow-brutal hover:bg-white hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all flex items-center gap-2 mx-auto"
+                  >
+                    <ShoppingCart size={16} />
+                    IMPORT ORDER
+                  </button>
                 </div>
               )}
 
