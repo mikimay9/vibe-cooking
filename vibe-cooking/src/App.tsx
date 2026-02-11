@@ -313,9 +313,8 @@ function App() {
     setActiveTab('my_recipes');
     setIsRecipeFormOpen(true);
   };
-
-  const handlePatrolImport = (url: string) => handleImportRecipe(url);
-  const handleFlyerImport = (data: Partial<Recipe>) => handleImportRecipe(data);
+  const handlePatrolImport = (input: any) => handleImportRecipe(input);
+  const handleFlyerImport = (input: any) => handleImportRecipe(input);
 
 
   const handleToggleDayType = async (date: Date, currentType: 'work' | 'home') => {
@@ -548,7 +547,7 @@ function App() {
 
               {activeTab === 'buzz' && (
                 <div className="h-full">
-                  <PatrolView onAddRecipe={(url: string) => handlePatrolImport(url)} />
+                  <PatrolView onAddRecipe={handlePatrolImport as (url: string) => void} />
                 </div>
               )}
 
@@ -556,7 +555,7 @@ function App() {
                 <div className="h-full">
                   <FlyerAnalysisView
                     existingRecipes={recipes}
-                    onAddRecipe={(data: Partial<Recipe>) => handleFlyerImport(data)}
+                    onAddRecipe={handleFlyerImport as (recipe: Partial<Recipe>) => void}
                   />
                 </div>
               )}
