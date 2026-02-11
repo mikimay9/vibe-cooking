@@ -1,5 +1,6 @@
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
+import { Zap, Flame, Package } from 'lucide-react';
 
 interface DraggableRecipeProps {
     id: string;
@@ -48,11 +49,11 @@ export const DraggableRecipe = ({ id, name, image_url, category, rating, has_coo
                     ${is_coop ? 'bg-white text-black' : ''}
                 `}>
                     {is_coop ? (
-                        <span className="text-lg leading-none">
-                            {cooking_type === 'renchin' && '⚡'}
-                            {cooking_type === 'cook' && '🔥'}
-                            {!cooking_type && '📦'}
-                        </span>
+                        <div className="flex items-center justify-center w-full h-full">
+                            {cooking_type === 'renchin' && <Zap size={18} className="text-neon-cyan" fill="currentColor" />}
+                            {cooking_type === 'cook' && <Flame size={18} className="text-red-500" fill="currentColor" />}
+                            {!cooking_type || cooking_type === 'none' && <Package size={18} className="text-gray-400" />}
+                        </div>
                     ) : (
                         <>
                             <span className="text-xs leading-none mb-[1px]">{name.slice(0, 1)}</span>

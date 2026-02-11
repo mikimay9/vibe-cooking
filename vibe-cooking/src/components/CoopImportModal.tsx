@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ShoppingCart, X, Check, ArrowRight, AlertCircle } from 'lucide-react';
+import { ShoppingCart, X, Check, ArrowRight, AlertCircle, Zap, Flame, Package } from 'lucide-react';
 import type { Recipe } from '../types';
 
 interface CoopImportModalProps {
@@ -137,24 +137,28 @@ export const CoopImportModal = ({ isOpen, onClose, onImport }: CoopImportModalPr
                                 {parsedItems.map(item => (
                                     <div key={item.id} className="flex flex-col sm:flex-row sm:items-center gap-2 p-2 border-2 border-dashed border-gray-300 bg-gray-50">
                                         <span className="flex-1 font-bold text-sm">{item.name}</span>
+                                        <span className="flex-1 font-bold text-sm">{item.name}</span>
                                         <div className="flex gap-1 shrink-0">
                                             <button
                                                 onClick={() => handleTypeChange(item.id, 'renchin')}
-                                                className={`px-2 py-1 text-xs font-bold border-2 border-black transition-colors ${item.cooking_type === 'renchin' ? 'bg-neon-yellow text-black' : 'bg-white text-gray-400'}`}
+                                                className={`px-3 py-1 flex items-center justify-center border-2 border-black transition-colors ${item.cooking_type === 'renchin' ? 'bg-neon-cyan text-white' : 'bg-white text-gray-400'}`}
+                                                title="RANGE"
                                             >
-                                                ⚡ RANGE
+                                                <Zap size={16} fill={item.cooking_type === 'renchin' ? "currentColor" : "none"} />
                                             </button>
                                             <button
                                                 onClick={() => handleTypeChange(item.id, 'cook')}
-                                                className={`px-2 py-1 text-xs font-bold border-2 border-black transition-colors ${item.cooking_type === 'cook' ? 'bg-red-500 text-white' : 'bg-white text-gray-400'}`}
+                                                className={`px-3 py-1 flex items-center justify-center border-2 border-black transition-colors ${item.cooking_type === 'cook' ? 'bg-red-500 text-white' : 'bg-white text-gray-400'}`}
+                                                title="COOK"
                                             >
-                                                🔥 COOK
+                                                <Flame size={16} fill={item.cooking_type === 'cook' ? "currentColor" : "none"} />
                                             </button>
                                             <button
                                                 onClick={() => handleTypeChange(item.id, 'none')}
-                                                className={`px-2 py-1 text-xs font-bold border-2 border-black transition-colors ${item.cooking_type === 'none' ? 'bg-gray-800 text-white' : 'bg-white text-gray-400'}`}
+                                                className={`px-3 py-1 flex items-center justify-center border-2 border-black transition-colors ${item.cooking_type === 'none' ? 'bg-gray-500 text-white' : 'bg-white text-gray-400'}`}
+                                                title="OTHER"
                                             >
-                                                ❓ OTHER
+                                                <Package size={16} />
                                             </button>
                                         </div>
                                     </div>
