@@ -9,6 +9,8 @@ import { GachaButton } from './GachaButton';
 interface Recipe {
     id: string;
     name: string;
+    is_coop?: boolean;
+    cooking_type?: 'renchin' | 'cook' | 'none';
 }
 
 interface WeeklyPlanItem {
@@ -99,21 +101,53 @@ export const DayColumn = ({ date, dayType, plans, onToggleDayType, onDeletePlan,
             {/* Slots Container */}
             <div className="p-4 flex flex-col gap-3 z-10 flex-1">
                 <DroppableSlot id={`${dateKey}-main`} label="MAIN PROJECT" isOver={false}>
-                    {main && <DraggableRecipe id={`plan-${main.id}`} name={main.recipe.name} onDelete={() => onDeletePlan(main.id)} />}
+                    {main && (
+                        <DraggableRecipe
+                            id={`plan-${main.id}`}
+                            name={main.recipe.name}
+                            is_coop={main.recipe.is_coop}
+                            cooking_type={main.recipe.cooking_type}
+                            onDelete={() => onDeletePlan(main.id)}
+                        />
+                    )}
                 </DroppableSlot>
 
                 <div className="space-y-3">
                     <DroppableSlot id={`${dateKey}-side-1`} label="SIDE TASK 01" isOver={false}>
-                        {sides[0] && <DraggableRecipe id={`plan-${sides[0].id}`} name={sides[0].recipe.name} onDelete={() => onDeletePlan(sides[0].id)} />}
+                        {sides[0] && (
+                            <DraggableRecipe
+                                id={`plan-${sides[0].id}`}
+                                name={sides[0].recipe.name}
+                                is_coop={sides[0].recipe.is_coop}
+                                cooking_type={sides[0].recipe.cooking_type}
+                                onDelete={() => onDeletePlan(sides[0].id)}
+                            />
+                        )}
                     </DroppableSlot>
                     <DroppableSlot id={`${dateKey}-side-2`} label="SIDE TASK 02" isOver={false}>
-                        {sides[1] && <DraggableRecipe id={`plan-${sides[1].id}`} name={sides[1].recipe.name} onDelete={() => onDeletePlan(sides[1].id)} />}
+                        {sides[1] && (
+                            <DraggableRecipe
+                                id={`plan-${sides[1].id}`}
+                                name={sides[1].recipe.name}
+                                is_coop={sides[1].recipe.is_coop}
+                                cooking_type={sides[1].recipe.cooking_type}
+                                onDelete={() => onDeletePlan(sides[1].id)}
+                            />
+                        )}
                     </DroppableSlot>
                 </div>
 
                 <DroppableSlot id={`${dateKey}-soup`} label="SOUP / OPTION" isOver={false}>
                     <div className="flex justify-between items-start w-full">
-                        {soup && <DraggableRecipe id={`plan-${soup.id}`} name={soup.recipe.name} onDelete={() => onDeletePlan(soup.id)} />}
+                        {soup && (
+                            <DraggableRecipe
+                                id={`plan-${soup.id}`}
+                                name={soup.recipe.name}
+                                is_coop={soup.recipe.is_coop}
+                                cooking_type={soup.recipe.cooking_type}
+                                onDelete={() => onDeletePlan(soup.id)}
+                            />
+                        )}
                         {!soup && (
                             <div className="w-full h-full min-h-[40px]">
                                 <GachaButton onClick={onSoupGacha} />

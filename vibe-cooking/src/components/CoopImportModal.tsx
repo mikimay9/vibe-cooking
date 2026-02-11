@@ -75,7 +75,7 @@ export const CoopImportModal = ({ isOpen, onClose, onImport }: CoopImportModalPr
             name: item.name,
             url: '',
             frequency: 'none',
-            child_rating: 0,
+            child_rating: 3,
             memo: 'CO-OP Import',
             category: 'main',
             ingredients: [],

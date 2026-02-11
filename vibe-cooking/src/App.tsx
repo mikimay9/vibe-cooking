@@ -94,7 +94,7 @@ function App() {
       .from('weekly_plan')
       .select(`
             id, date, slot_type, day_type, created_at,
-            recipe:recipes (id, name)
+            recipe:recipes (id, name, is_coop, cooking_type)
         `)
       .gte('date', format(startDate, 'yyyy-MM-dd'))
       .lte('date', format(endDate, 'yyyy-MM-dd'))
@@ -336,8 +336,15 @@ function App() {
   const [activeMobileTab, setActiveMobileTab] = useState<'board' | 'shelf'>('board');
 
   const filteredRecipes = recipes.filter(recipe => {
-    if (filterCategory === 'all') return true;
-    return recipe.category === filterCategory;
+    if (activeTab === 'coop') {
+      return recipe.is_coop;
+    }
+    if (activeTab === 'my_recipes') {
+      if (recipe.is_coop) return false; // Filter out Co-op items
+      if (filterCategory === 'all') return true;
+      return recipe.category === filterCategory;
+    }
+    return true; // Buzz handled separately
   });
 
   return (
@@ -377,19 +384,19 @@ function App() {
                   onClick={() => setActiveTab('my_recipes')}
                   className={`flex-1 py-2 text-xs font-black uppercase tracking-wider transition-all ${activeTab === 'my_recipes' ? 'bg-neon-yellow text-black' : 'text-gray-400 hover:text-white'}`}
                 >
-                  My
+                  RECIPES
                 </button>
                 <button
                   onClick={() => setActiveTab('coop')}
-                  className={`flex-1 py-2 text-xs font-black uppercase tracking-wider transition-all ${activeTab === 'coop' ? 'bg-green-400 text-black' : 'text-gray-400 hover:text-white'}`}
+                  className={`flex-1 py-2 text-xs font-black uppercase tracking-wider transition-all ${activeTab === 'coop' ? 'bg-neon-cyan text-black' : 'text-gray-400 hover:text-white'}`}
                 >
-                  Co-op
+                  CO-OP
                 </button>
                 <button
                   onClick={() => setActiveTab('buzz')}
                   className={`flex-1 py-2 text-xs font-black uppercase tracking-wider transition-all ${activeTab === 'buzz' ? 'bg-purple-400 text-black' : 'text-gray-400 hover:text-white'}`}
                 >
-                  Buzz
+                  BUZZ
                 </button>
 
               </div>
@@ -435,7 +442,7 @@ function App() {
                       key={recipe.id}
                       id={`recipe-${recipe.id}`}
                       name={recipe.name}
-                      category={recipe.category}
+                      category={recipe.category || 'main'}
                       rating={recipe.rating}
                       has_cooked={recipe.has_cooked}
                       is_hibernating={recipe.is_hibernating}
@@ -447,24 +454,44 @@ function App() {
                   {filteredRecipes.length === 0 && (
                     <div className="text-center mt-10 p-8 border-4 border-dashed border-gray-800">
                       <p className="text-gray-600 font-black uppercase text-xl">NO DATA</p>
-                      <p className="text-gray-700 text-xs mt-2">ADD NEW PROJECT</p>
+                      <p className="text-gray-700 text-xs mt-2">ADD NEW RECIPE</p>
                     </div>
                   )}
                 </>
               )}
 
               {activeTab === 'coop' && (
-                <div className="text-center text-gray-500 mt-10 p-8 border-4 border-dashed border-gray-800">
-                  <p className="text-4xl mb-4">🚚</p>
-                  <p className="font-bold uppercase">CO-OP SYSTEM</p>
-                  <button
-                    onClick={() => setIsCoopImportOpen(true)}
-                    className="mt-4 px-4 py-2 bg-neon-cyan text-black font-bold border-2 border-black shadow-brutal hover:bg-white hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all flex items-center gap-2 mx-auto"
-                  >
-                    <ShoppingCart size={16} />
-                    IMPORT ORDER
-                  </button>
-                </div>
+                <>
+                  <div className="mb-4 text-center">
+                    <button
+                      onClick={() => setIsCoopImportOpen(true)}
+                      className="w-full px-4 py-2 bg-neon-cyan text-black font-bold border-2 border-black shadow-brutal hover:bg-white hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all flex items-center justify-center gap-2"
+                    >
+                      <ShoppingCart size={16} />
+                      IMPORT ORDER
+                    </button>
+                  </div>
+                  {filteredRecipes.map(recipe => (
+                    <DraggableRecipe
+                      key={recipe.id}
+                      id={`recipe-${recipe.id}`}
+                      name={recipe.name}
+                      category={recipe.category || 'main'}
+                      rating={recipe.rating}
+                      has_cooked={recipe.has_cooked}
+                      is_hibernating={recipe.is_hibernating}
+                      is_coop={recipe.is_coop}
+                      cooking_type={recipe.cooking_type}
+                      onEdit={() => setEditingRecipe(recipe)}
+                    />
+                  ))}
+                  {filteredRecipes.length === 0 && (
+                    <div className="text-center mt-10 p-8 border-4 border-dashed border-gray-800">
+                      <p className="text-gray-600 font-black uppercase text-xl">NO STOCK</p>
+                      <p className="text-gray-700 text-xs mt-2">IMPORT FROM EMAIL</p>
+                    </div>
+                  )}
+                </>
               )}
 
               {activeTab === 'buzz' && (
