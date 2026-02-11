@@ -77,7 +77,7 @@ function App() {
       const { error } = await supabase.from('recipes').insert(newRecipes);
       if (error) {
         console.error('Error importing recipes:', error);
-        alert('Import failed!');
+        alert(`Import failed! ${error.message}`);
       } else {
         setRecipes(prev => [...prev, ...newRecipes]);
         alert(`${newRecipes.length} items imported!`);
