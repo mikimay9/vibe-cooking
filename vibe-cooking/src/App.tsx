@@ -71,42 +71,7 @@ function App() {
     else setRecipes(data || []);
   };
 
-  const handleCoopImport = async (text: string) => {
-    const lines = text.split('\n').filter(line => line.trim());
-    const newRecipes: Recipe[] = [];
-
-    for (const line of lines) {
-      // Simple extraction logic (can be enhanced later)
-      let name = line.trim();
-      let cooking_type: 'renchin' | 'cook' | 'none' = 'cook'; // Default to cook
-
-      if (name.includes('レンジ') || name.includes('チン') || name.includes('即食')) {
-        cooking_type = 'renchin';
-      }
-
-      // Clean up name (optional)
-      // name = name.replace(/（.*?）/g, '').trim();
-
-      const newRecipe: Recipe = {
-        id: crypto.randomUUID(),
-        name: name,
-        url: '',
-        frequency: 'none',
-        child_rating: 0,
-        memo: 'CO-OP Import',
-        category: 'main', // Default to main
-        ingredients: [],
-        work_duration: cooking_type === 'renchin' ? 5 : 20,
-        arrangements: [],
-        rating: 1,
-        has_cooked: false,
-        is_hibernating: false,
-        is_coop: true,
-        cooking_type: cooking_type
-      };
-      newRecipes.push(newRecipe);
-    }
-
+  const handleCoopImport = async (newRecipes: Recipe[]) => {
     if (newRecipes.length > 0) {
       if (!supabase) return;
       const { error } = await supabase.from('recipes').insert(newRecipes);
